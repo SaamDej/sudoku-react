@@ -6,6 +6,7 @@ import SudokuBoard from "./components/SudokuBoard(OLD)";
 import setBoardLayout from "./utilities/setBoardLayout";
 import exampleBoard, { examplePrefill } from "./utilities/exampleBoard";
 import createPrefill from "./utilities/createPrefill";
+import NumPad from "./components/NumPad";
 
 function App() {
   //console.log("Hello :)");
@@ -14,7 +15,11 @@ function App() {
     keyMap.set(`Digit${i + 1}`, i + 1);
   }
   //console.log("KeyMap: " + keyMap);
-  const cellRef = useRef(0);
+  //const cellRef = useRef(null);
+  const refs = useRef<HTMLDivElement[]>([]);
+  const [currentCell, setCurrentCell] = useState<SudokuCellAttributes | null>(
+    null
+  );
   const board: SudokuCellAttributes[] = useMemo(
     () => setBoardLayout(exampleBoard, examplePrefill),
     []
@@ -24,6 +29,11 @@ function App() {
       setNodeMode((prev) => !prev);
     }
   }
+  const [displayCells, setDisplayCells] = useState<number[]>(
+    board.map((cell) => {
+      return cell.displayNumber;
+    })
+  );
   const [noteMode, setNodeMode] = useState(false);
   useEffect(() => {
     document.addEventListener("keydown", shiftHold);
@@ -39,9 +49,12 @@ function App() {
         <h1 className="text-3xl font-sans">Sudoku</h1>
         <SudokuBoard
           cellArray={board}
+          dispArray={displayCells}
+          setDispArray={setDisplayCells}
+          setCurr={setCurrentCell}
           focus={() => {}}
           keyPress={(e) => {}}
-          cellRefs={0}
+          cellRefs={refs}
           noteMode={noteMode}
           keyMap={keyMap}
         />
@@ -56,12 +69,37 @@ function App() {
             className="rounded bg-blue-500 p-3 text-white text-l  hover:bg-blue-700"
             onMouseDown={(e: React.MouseEvent) => {
               e.preventDefault();
+              if (currentCell) {
+                if (!currentCell.prefilled) {
+                  if (displayCells[currentCell.index] != 0) {
+                    const newArray = displayCells.map((value, i) => {
+                      if (i === currentCell.index) {
+                        return 0;
+                      } else return value;
+                    });
+                    setDisplayCells(newArray);
+                  }
+                  // else if (checkEmpty(notes[currentCell.index]) != true) {
+                  //   const clearedArray = notes[currentCell.index].fill(false);
+                  //   const newNotes = notes.map((noteArray, i) => {
+                  //     if (i === index) {
+                  //       return clearedArray;
+                  //     } else return noteArray;
+                  //   });
+                  //   setNotes(newNotes);
+                  // }
+                }
+              }
             }}
           >
             Clear Cell
           </button>
         </div>
         <p className="text-xl">Note Mode: {noteMode ? "ON" : "OFF"}</p>
+      </div>
+      <div>
+        <NumPad />
+        <h1>{currentCell ? currentCell.index : "none"}</h1>
       </div>
       {console.count("counter")}
     </>
