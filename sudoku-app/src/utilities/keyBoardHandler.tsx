@@ -1,0 +1,107 @@
+import { SudokuCellAttributes } from "../components/SudokuCell";
+
+function keyBoardHandler(
+  e: React.KeyboardEvent, // check expected
+  index: number,
+  prefilled: boolean,
+  refCurrents: HTMLDivElement[],
+  board: SudokuCellAttributes[],
+  displayNumbers: number[],
+  setDisplayNumbers: React.Dispatch<React.SetStateAction<number[]>>,
+  noteMode: boolean,
+  notes: boolean[][],
+  setNotes: React.Dispatch<React.SetStateAction<boolean[][]>>,
+  keyMap: Map<string, number>
+) {
+  function checkEmpty(arr: boolean[]) {
+    return arr.every((i) => i === false);
+  }
+  const pressedKey: string = e.key.toLowerCase();
+  //console.log(e.code);
+  switch (pressedKey) {
+    case "w":
+    case "arrowup": {
+      if (refCurrents[index - 9]) refCurrents[index - 9].focus();
+      break;
+    }
+    case "a":
+    case "arrowleft": {
+      if (refCurrents[index - 1] && board[index - 1].row === board[index].row)
+        refCurrents[index - 1].focus();
+      break;
+    }
+    case "s":
+    case "arrowdown": {
+      if (refCurrents[index + 9]) refCurrents[index + 9].focus();
+      break;
+    }
+    case "d":
+    case "arrowright": {
+      if (refCurrents[index + 1] && board[index + 1].row === board[index].row)
+        refCurrents[index + 1].focus();
+      break;
+    }
+    case "backspace": {
+      if (!prefilled) {
+        if (displayNumbers[index] != 0) {
+          const newArray = displayNumbers.map((value, i) => {
+            if (i === index) {
+              return 0;
+            } else return value;
+          });
+          setDisplayNumbers(newArray);
+        } else if (checkEmpty(notes[index]) != true) {
+          const clearedArray = notes[index].fill(false);
+          const newNotes = notes.map((noteArray, i) => {
+            if (i === index) {
+              return clearedArray;
+            } else return noteArray;
+          });
+          setNotes(newNotes);
+        }
+      }
+      break;
+    }
+    default: {
+      const parsedKey: number = keyMap.get(e.code) || 0;
+      if (!prefilled) {
+        if (noteMode) {
+          if (
+            displayNumbers[index] === 0 &&
+            !Number.isNaN(parsedKey) &&
+            parsedKey != 0
+          ) {
+            const cellNotesArray = notes[index].map((note, i) => {
+              if (parsedKey != 0 && i === parsedKey - 1) {
+                return !note;
+              } else return note;
+            });
+            //console.log(cellNotesArray);
+            const newNotes = notes.map((noteArray, i) => {
+              if (i === index) {
+                return cellNotesArray;
+              } else return noteArray;
+            });
+            setNotes(newNotes);
+          }
+        } else {
+          if (
+            !Number.isNaN(parsedKey) &&
+            parsedKey != 0 &&
+            displayNumbers[index].toString() != e.key
+          ) {
+            const newArray = displayNumbers.map((value, i) => {
+              if (i === index) {
+                return parsedKey;
+              } else return value;
+            });
+            setDisplayNumbers(newArray);
+          }
+        }
+      }
+      break;
+    }
+  }
+}
+
+export default keyBoardHandler;
