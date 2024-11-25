@@ -101,9 +101,10 @@ function App() {
             </p>
             <p>
               <b className="underline">Selecting a cell :</b> Any cell on the
-              grid can be selected by either clicking on cell the with the mouse
-              pointer, or by using the Tab Key to focus the grid, and navigating
-              using the following keys:
+              grid can be selected by either{" "}
+              <b>clicking on cell the with the mouse pointer</b>, or by pressing
+              the <b> Tab Key to focus the grid</b>, and navigating using the
+              following keys:
             </p>
             <ul className="list-disc list-inside">
               <li>
@@ -120,23 +121,27 @@ function App() {
               </li>
             </ul>
             <p>
-              <b className="underline">Fill a cell :</b> Once a fillabe cell has
-              been selected, press one of the number keys (1-9), or click on one
-              of the nine number buttons below the grid with the mouse pointer.
+              <b className="underline">Fill a cell :</b> Once a fillable cell
+              has been selected, press any of the <b>number keys (1-9)</b>, or
+              <b> click on one of the nine number buttons</b> below the grid
+              with the mouse pointer.
             </p>
             <p>
-              <b className="underline">Clear a cell :</b> Press the Backspace
-              key, or click the "clear cell" button, with a cell selected.
+              <b className="underline">Clear a cell :</b> Press the{" "}
+              <b>Backspace key</b>, or <b>click the "clear cell" button</b>,
+              with a cell selected.
             </p>
             <p>
               <b className="underline">Note Mode :</b> This feature allows the
-              player to record the potential answers of an empty cell without
-              actually filling it with an answer. Any numbers inputted into an
-              empty cell with Note mode enabled will mark the cell with a "note"
-              of that number, allowing for multiple notes on one cell. Hold the
-              Shift key will to switch Note mode on (or off) until it the key is
-              released. Click the "Note mode" button below the grid to toggle
-              Note mode on or off. By default Note mode is off.
+              player to <b>record the potential answers</b> of an empty cell
+              without actually filling it with an answer. Any numbers inputted
+              into an empty cell with Note mode <b>enabled</b> will{" "}
+              <b>mark the cell with a "note"</b> of that number, allowing for{" "}
+              <b>multiple notes on one cell</b>. <b>Hold the Shift key</b> to
+              switch Note mode on (or off) until the key is released.{" "}
+              <b>Click the "Note mode" button</b> below the grid to toggle Note
+              mode on or off. Notes can be cleared with the same controls as
+              listed above. By default Note mode is off.
             </p>
           </>
         </Modal>

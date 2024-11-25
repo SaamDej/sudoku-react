@@ -43,7 +43,7 @@ const Modal = ({ isOpen, setIsOpen, children }: ModalProps) => {
               }
               onClick={() => setIsOpen(false)}
             >
-              Close Panel
+              Close
             </button>
           </div>
         </DialogPanel>
