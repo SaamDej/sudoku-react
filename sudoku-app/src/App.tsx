@@ -1,21 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import reactLogo from "./assets/react.svg";
 import "./App.css";
-import SudokuCell, { SudokuCellAttributes } from "./components/SudokuCell";
+import { SudokuCellAttributes } from "./components/SudokuCell";
 import SudokuBoard from "./components/SudokuBoard(OLD)";
 import setBoardLayout from "./utilities/setBoardLayout";
 import exampleBoard, { examplePrefill } from "./utilities/exampleBoard";
-import createPrefill from "./utilities/createPrefill";
 import NumPad from "./components/NumPad";
+import checkEmpty from "./utilities/checkEmpty";
 
 function App() {
-  //console.log("Hello :)");
   const keyMap = new Map();
   for (let i = 0; i < 9; i++) {
     keyMap.set(`Digit${i + 1}`, i + 1);
   }
-  //console.log("KeyMap: " + keyMap);
-  //const cellRef = useRef(null);
   const refs = useRef<HTMLDivElement[]>([]);
   const [currentCell, setCurrentCell] = useState<SudokuCellAttributes | null>(
     null
@@ -26,7 +22,7 @@ function App() {
   );
   function shiftHold(e: KeyboardEvent) {
     if (e.key === "Shift" && !e.repeat) {
-      setNodeMode((prev) => !prev);
+      setNoteMode((prev) => !prev);
     }
   }
   const [displayCells, setDisplayCells] = useState<number[]>(
@@ -34,7 +30,10 @@ function App() {
       return cell.displayNumber;
     })
   );
-  const [noteMode, setNodeMode] = useState(false);
+  const [notes, setNotes] = useState<boolean[][]>(
+    Array.from({ length: 81 }, () => Array(9).fill(false))
+  );
+  const [noteMode, setNoteMode] = useState<boolean>(false);
   useEffect(() => {
     document.addEventListener("keydown", shiftHold);
     document.addEventListener("keyup", shiftHold);
@@ -43,13 +42,17 @@ function App() {
       document.removeEventListener("keyup", shiftHold);
     };
   }, []);
+
   return (
     <>
       <div className="flex items-center flex-col space-y-4">
-        <h1 className="text-3xl font-sans">Sudoku</h1>
+        <h1 className="text-3xl font-sans">Sudoku React</h1>
+        <button>How to Play</button>
         <SudokuBoard
           cellArray={board}
           dispArray={displayCells}
+          notes={notes}
+          setNotes={setNotes}
           setDispArray={setDisplayCells}
           setCurr={setCurrentCell}
           focus={() => {}}
@@ -61,7 +64,7 @@ function App() {
         <div className="flex flex-row gap-x-5">
           <button
             className="rounded bg-blue-500 p-3 text-white text-lg hover:bg-blue-700"
-            onClick={() => setNodeMode(!noteMode)}
+            onClick={() => setNoteMode(!noteMode)}
           >
             Toggle Note Mode
           </button>
@@ -78,16 +81,15 @@ function App() {
                       } else return value;
                     });
                     setDisplayCells(newArray);
+                  } else if (checkEmpty(notes[currentCell.index]) != true) {
+                    const clearedArray = notes[currentCell.index].fill(false);
+                    const newNotes = notes.map((noteArray, i) => {
+                      if (i === currentCell.index) {
+                        return clearedArray;
+                      } else return noteArray;
+                    });
+                    setNotes(newNotes);
                   }
-                  // else if (checkEmpty(notes[currentCell.index]) != true) {
-                  //   const clearedArray = notes[currentCell.index].fill(false);
-                  //   const newNotes = notes.map((noteArray, i) => {
-                  //     if (i === index) {
-                  //       return clearedArray;
-                  //     } else return noteArray;
-                  //   });
-                  //   setNotes(newNotes);
-                  // }
                 }
               }
             }}
@@ -98,7 +100,14 @@ function App() {
         <p className="text-xl">Note Mode: {noteMode ? "ON" : "OFF"}</p>
       </div>
       <div>
-        <NumPad />
+        <NumPad
+          currCell={currentCell}
+          displayArray={displayCells}
+          setDisplay={setDisplayCells}
+          notes={notes}
+          setNotes={setNotes}
+          noteMode={noteMode}
+        />
         <h1>{currentCell ? currentCell.index : "none"}</h1>
       </div>
       {console.count("counter")}

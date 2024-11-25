@@ -1,3 +1,6 @@
+// Premade example sudoku board split between two 2D arrays.
+//
+// Array of cell answers
 const exampleBoard: number[][] = [
   [4, 3, 5, 6, 8, 2, 1, 9, 7],
   [2, 6, 9, 5, 7, 1, 8, 3, 4],
@@ -10,6 +13,9 @@ const exampleBoard: number[][] = [
   [8, 7, 4, 1, 3, 6, 2, 5, 9],
 ];
 
+// Array for determining which cells will be displayed as prefilled or empty
+// True : Prefilled
+// False : Empty
 export const examplePrefill = [
   [false, false, false, true, true, false, true, true, false],
   [true, true, false, false, true, false, false, false, true],

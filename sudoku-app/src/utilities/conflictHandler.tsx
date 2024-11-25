@@ -1,4 +1,9 @@
 import { SudokuCellAttributes } from "../components/SudokuCell";
+// This function checks if a user's input creates a confliction on the Sudoku Board.
+// The variable conflict is returned true when the following is true
+// about number that is inputted into a cell:
+// * It is already found in the same block (3x3 cell grid)
+// * It is already found in the same row and/or column across the entire board.
 
 function conflictHandler(
   row: number,

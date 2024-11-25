@@ -5,6 +5,8 @@ import conflictHandler from "../utilities/conflictHandler";
 interface SudokuBoardProps {
   cellArray: SudokuCellAttributes[];
   dispArray: number[];
+  notes: boolean[][];
+  setNotes: React.Dispatch<React.SetStateAction<boolean[][]>>;
   setDispArray: React.Dispatch<React.SetStateAction<number[]>>;
   setCurr: React.Dispatch<React.SetStateAction<SudokuCellAttributes | null>>;
   focus: () => void;
@@ -17,6 +19,8 @@ interface SudokuBoardProps {
 const SudokuBoard = ({
   cellArray,
   dispArray,
+  notes,
+  setNotes,
   setDispArray,
   setCurr,
   focus,
@@ -25,17 +29,9 @@ const SudokuBoard = ({
   noteMode = false,
   keyMap,
 }: SudokuBoardProps) => {
-  // const refs = useRef<HTMLDivElement[]>([]);
-
-  // const [displayCells, setDisplayCells] = useState<number[]>(
-  //   cellArray.map((cell) => {
-  //     return cell.displayNumber;
-  //   })
+  // const [notes, setNotes] = useState<boolean[][]>(
+  //   Array.from({ length: 81 }, () => Array(9).fill(false))
   // );
-
-  const [notes, setNotes] = useState<boolean[][]>(
-    Array.from({ length: 81 }, () => Array(9).fill(false))
-  );
 
   const cells = cellArray.map((cell, index) => (
     <SudokuCell

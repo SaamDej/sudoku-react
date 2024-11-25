@@ -54,7 +54,7 @@ const SudokuCell = ({
     return borderTypes[blockRow][blockColumn];
   }
   const cellSize =
-    "size-20 flex items-center justify-center text-center outline-none box-content";
+    "size-16 flex items-center justify-center text-center outline-none box-content";
   const cellDefault = "bg-white focus:bg-yellow-200 text-blue-500";
   const cellConflict =
     " bg-red-400 focus:bg-red-500 " + (!prefilled ? " text-red-900" : "");
@@ -103,11 +103,11 @@ const SudokuCell = ({
       tabIndex={0}
     >
       {displayNumber > 0 && displayNumber < 10 ? (
-        <p className=" select-none text-6xl font-semibold pb-1.5">
+        <p className=" select-none text-5xl font-semibold">
           {setDisplay(displayNumber)}
         </p>
       ) : (
-        <div className="grid grid-cols-3 grid-rows-3 gap-x-5">{cellNotes}</div>
+        <div className="grid grid-cols-3 grid-rows-3 gap-x-4">{cellNotes}</div>
       )}
     </div>
   );

@@ -1,3 +1,4 @@
+// This function is meant to generate a randomized array used to determine which cells are prefilled or not.
 function createPrefill() {
   let array = [];
   for (let i = 0; i < 9; i++) {

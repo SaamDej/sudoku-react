@@ -1,5 +1,8 @@
 import { SudokuCellAttributes } from "../components/SudokuCell";
 
+//This function handles keyboard inputs when interacting with the sudoku cells.
+// WASD and Arrow Keys used for navigation
+// Holding Shift will toggle between Pencil (note) and Default input.
 function keyBoardHandler(
   e: React.KeyboardEvent, // check expected
   index: number,
@@ -17,7 +20,6 @@ function keyBoardHandler(
     return arr.every((i) => i === false);
   }
   const pressedKey: string = e.key.toLowerCase();
-  //console.log(e.code);
   switch (pressedKey) {
     case "w":
     case "arrowup": {
@@ -76,7 +78,6 @@ function keyBoardHandler(
                 return !note;
               } else return note;
             });
-            //console.log(cellNotesArray);
             const newNotes = notes.map((noteArray, i) => {
               if (i === index) {
                 return cellNotesArray;
