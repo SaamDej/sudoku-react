@@ -6,6 +6,7 @@ import setBoardLayout from "./utilities/setBoardLayout";
 import exampleBoard, { examplePrefill } from "./utilities/exampleBoard";
 import NumPad from "./components/NumPad";
 import checkEmpty from "./utilities/checkEmpty";
+import Modal from "./components/Modal";
 
 function App() {
   const keyMap = new Map();
@@ -33,6 +34,7 @@ function App() {
   const [notes, setNotes] = useState<boolean[][]>(
     Array.from({ length: 81 }, () => Array(9).fill(false))
   );
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [noteMode, setNoteMode] = useState<boolean>(false);
   useEffect(() => {
     document.addEventListener("keydown", shiftHold);
@@ -47,7 +49,97 @@ function App() {
     <>
       <div className="flex items-center flex-col space-y-4">
         <h1 className="text-3xl font-sans">Sudoku React</h1>
-        <button>How to Play</button>
+        <button
+          className={
+            "bg-green-500 text-white p-2 rounded-xl hover:bg-green-700"
+          }
+          onClick={() => setIsModalOpen(true)}
+        >
+          How to Play
+        </button>
+        <Modal isOpen={isModalOpen} setIsOpen={setIsModalOpen}>
+          <>
+            <p className="pt-3 text-left">
+              Sudoku is a puzzle game where the player must fill every empty
+              cell (square) on a <b>9 x 9 cell grid</b> <br /> split into a{" "}
+              <b>3 x 3 grid of cell blocks</b> (each being a 3 x 3 cell grid)
+              with <b>a number between 1 and 9</b>. <br />
+              Some of the cells have their answers already given. These{" "}
+              <b>prefilled cells</b> are indicated by their answers being
+              displayed in <b>black</b> and <b>cannot be edited</b>. Numbers
+              inputted into empty (editable) cells will be displayed with a{" "}
+              <b className="text-blue-500">blue color</b> to indicate that they
+              have been <b>inputted by the player</b>.
+            </p>
+            <h1 className="text-xl font-semibold underline">Rules</h1>
+            <p>
+              When filling a cell, the player must make sure that the answer
+              does not conflict with the following condition based on the
+              numbers 1 through 9.
+            </p>
+            <p className="font-bold text-red">
+              A given number cannot appear in any cell block, column, and/or row
+              more than once.
+            </p>
+            <p>
+              If the player inputs an answer which conflicts with this condition
+              based on the filled cells (both prefilled and player-inputted),
+              the <b>conflicting cells</b> will be{" "}
+              <b className="text-red-500">highlighted red</b>.
+            </p>
+            <p>
+              Once the player{" "}
+              <b>fills every empty cell without any having conflicting cells</b>
+              , <br />
+              only then is the puzzle{" "}
+              <b className="text-green-600">completed</b>.
+            </p>
+            <h1 className="text-xl font-semibold underline">Controls</h1>
+            <p>
+              The Sudoku grid can be interacted with via{" "}
+              <b>keyboard and/or onscreen controls</b>.
+            </p>
+            <p>
+              <b className="underline">Selecting a cell :</b> Any cell on the
+              grid can be selected by either clicking on cell the with the mouse
+              pointer, or by using the Tab Key to focus the grid, and navigating
+              using the following keys:
+            </p>
+            <ul className="list-disc list-inside">
+              <li>
+                <b>W / Up Arrow</b> : Selects the cell above the current cell.
+              </li>
+              <li>
+                <b>A / Left Arrow</b> : Selects the cell below.
+              </li>
+              <li>
+                <b>S / Down Arrow</b> : Selects the cell to the left.
+              </li>
+              <li>
+                <b>D / Right Arrow</b> : Selects the cell to the right.
+              </li>
+            </ul>
+            <p>
+              <b className="underline">Fill a cell :</b> Once a fillabe cell has
+              been selected, press one of the number keys (1-9), or click on one
+              of the nine number buttons below the grid with the mouse pointer.
+            </p>
+            <p>
+              <b className="underline">Clear a cell :</b> Press the Backspace
+              key, or click the "clear cell" button, with a cell selected.
+            </p>
+            <p>
+              <b className="underline">Note Mode :</b> This feature allows the
+              player to record the potential answers of an empty cell without
+              actually filling it with an answer. Any numbers inputted into an
+              empty cell with Note mode enabled will mark the cell with a "note"
+              of that number, allowing for multiple notes on one cell. Hold the
+              Shift key will to switch Note mode on (or off) until it the key is
+              released. Click the "Note mode" button below the grid to toggle
+              Note mode on or off. By default Note mode is off.
+            </p>
+          </>
+        </Modal>
         <SudokuBoard
           cellArray={board}
           dispArray={displayCells}
@@ -63,13 +155,13 @@ function App() {
         />
         <div className="flex flex-row gap-x-5">
           <button
-            className="rounded bg-blue-500 p-3 text-white text-lg hover:bg-blue-700"
+            className="rounded-xl bg-blue-500 p-3 text-white text-lg hover:bg-blue-700"
             onClick={() => setNoteMode(!noteMode)}
           >
             Toggle Note Mode
           </button>
           <button
-            className="rounded bg-blue-500 p-3 text-white text-l  hover:bg-blue-700"
+            className="rounded-xl bg-red-500 p-3 text-white text-l  hover:bg-red-700"
             onMouseDown={(e: React.MouseEvent) => {
               e.preventDefault();
               if (currentCell) {
@@ -99,7 +191,7 @@ function App() {
         </div>
         <p className="text-xl">Note Mode: {noteMode ? "ON" : "OFF"}</p>
       </div>
-      <div>
+      <div className="pt-3">
         <NumPad
           currCell={currentCell}
           displayArray={displayCells}
@@ -108,7 +200,9 @@ function App() {
           setNotes={setNotes}
           noteMode={noteMode}
         />
-        <h1>{currentCell ? currentCell.index : "none"}</h1>
+        <h1 className="pt-3">
+          Currently Selected Cell: {currentCell ? currentCell.index : "none"}
+        </h1>
       </div>
       {console.count("counter")}
     </>

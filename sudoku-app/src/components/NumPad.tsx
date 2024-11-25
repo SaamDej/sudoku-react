@@ -25,8 +25,8 @@ const NumPad = ({
       onClick={(e: React.MouseEvent) => {
         e.preventDefault();
         if (currCell && displayArray && !currCell.prefilled) {
-          if (displayArray[currCell.index] === 0) {
-            if (noteMode) {
+          if (noteMode) {
+            if (displayArray[currCell.index] === 0) {
               const cellNotesArray = notes[currCell.index].map(
                 (note, index) => {
                   if (index === i) {
