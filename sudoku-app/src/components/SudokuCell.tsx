@@ -25,6 +25,7 @@ interface SudokuCellProps {
   keyPress: (e: React.KeyboardEvent) => void;
   cellRef: any;
   notes?: boolean[];
+  showAnswer: boolean;
 }
 
 const SudokuCell = ({
@@ -41,8 +42,10 @@ const SudokuCell = ({
   focus,
   keyPress,
   cellRef,
-  notes = [false, false, false, false, false, false, false, false, false],
+  notes = Array(9).fill(false), //[false, false, false, false, false, false, false, false, false]
+  showAnswer,
 }: SudokuCellProps) => {
+  // console.log("cell:" + showAnswer.toString());
   const borderTypes = [
     ["border-r-2 border-b-2", "border-b-2", "border-l-2 border-b-2"],
     ["border-r-2", "", "border-l-2"],
@@ -53,6 +56,8 @@ const SudokuCell = ({
     const blockRow = row % 3;
     return borderTypes[blockRow][blockColumn];
   }
+  const normalText = "select-none text-5xl font-semibold";
+  const noteText = "select-none grid grid-cols-3 grid-rows-3 gap-x-4";
   const cellSize =
     "size-16 flex items-center justify-center text-center outline-none box-content";
   const cellDefault = "bg-white focus:bg-yellow-200 text-blue-500";
@@ -60,6 +65,7 @@ const SudokuCell = ({
     " bg-red-400 focus:bg-red-500 " + (!prefilled ? " text-red-900" : "");
   const cellShared = "bg-blue-300 focus:bg-blue-400";
   const cellPrefilled = "bg-white focus:bg-yellow-200";
+  const cellAnswerShown = "text-blue-200";
   function setDisplay(dn: number): string {
     return dn > 0 && dn < 10 ? dn.toString() : "";
   }
@@ -81,6 +87,11 @@ const SudokuCell = ({
       </div>
     )
   );
+  function AnswerText() {
+    return (
+      <p className={normalText + " " + cellAnswerShown}>{setDisplay(answer)}</p>
+    );
+  }
   return (
     <div
       ref={cellRef}
@@ -103,11 +114,12 @@ const SudokuCell = ({
       tabIndex={0}
     >
       {displayNumber > 0 && displayNumber < 10 ? (
-        <p className=" select-none text-5xl font-semibold">
-          {setDisplay(displayNumber)}
-        </p>
+        <p className={normalText}>{setDisplay(displayNumber)}</p>
       ) : (
-        <div className="grid grid-cols-3 grid-rows-3 gap-x-4">{cellNotes}</div>
+        <>
+          {showAnswer && displayNumber === 0 && <AnswerText></AnswerText>}
+          <div className={noteText + " fixed"}>{cellNotes}</div>
+        </>
       )}
     </div>
   );

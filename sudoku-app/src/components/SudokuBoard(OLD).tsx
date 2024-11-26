@@ -13,6 +13,7 @@ interface SudokuBoardProps {
   keyPress: (e: React.KeyboardEvent) => void;
   cellRefs: any;
   noteMode?: boolean;
+  showAnswers: boolean;
   keyMap: Map<string, number>;
 }
 
@@ -27,6 +28,7 @@ const SudokuBoard = ({
   keyPress,
   cellRefs,
   noteMode = false,
+  showAnswers,
   keyMap,
 }: SudokuBoardProps) => {
   // const [notes, setNotes] = useState<boolean[][]>(
@@ -71,11 +73,13 @@ const SudokuBoard = ({
           noteMode,
           notes,
           setNotes,
+          showAnswers,
           keyMap
         );
       }}
       cellRef={(cell: any) => cellRefs.current.push(cell)}
       notes={notes[index]}
+      showAnswer={showAnswers}
       key={index}
     />
   ));

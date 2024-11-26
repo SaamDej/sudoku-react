@@ -21,6 +21,7 @@ function App() {
     () => setBoardLayout(exampleBoard, examplePrefill),
     []
   );
+  const showAnswersArray: number[] = board.map((cell) => cell.answer);
   function shiftHold(e: KeyboardEvent) {
     if (e.key === "Shift" && !e.repeat) {
       setNoteMode((prev) => !prev);
@@ -31,6 +32,7 @@ function App() {
       return cell.displayNumber;
     })
   );
+  const [showAnswers, setShowAnswers] = useState<boolean>(false);
   const [notes, setNotes] = useState<boolean[][]>(
     Array.from({ length: 81 }, () => Array(9).fill(false))
   );
@@ -156,17 +158,18 @@ function App() {
           keyPress={(e) => {}}
           cellRefs={refs}
           noteMode={noteMode}
+          showAnswers={showAnswers}
           keyMap={keyMap}
         />
         <div className="flex flex-row gap-x-5">
           <button
-            className="rounded-xl bg-blue-500 p-3 text-white text-lg hover:bg-blue-700"
+            className="rounded-xl bg-blue-500 p-3 min-w-48 text-white text-lg hover:bg-blue-700"
             onClick={() => setNoteMode(!noteMode)}
           >
             Toggle Note Mode
           </button>
           <button
-            className="rounded-xl bg-red-500 p-3 text-white text-l  hover:bg-red-700"
+            className="rounded-xl bg-red-500 p-3 text-white text-lg  hover:bg-red-700"
             onMouseDown={(e: React.MouseEvent) => {
               e.preventDefault();
               if (currentCell) {
@@ -192,6 +195,14 @@ function App() {
             }}
           >
             Clear Cell
+          </button>
+          <button
+            className="rounded-xl bg-blue-500 p-3 text-white text-center hover:bg-blue-700 min-w-48 text-lg"
+            onMouseDown={() => {
+              setShowAnswers(!showAnswers);
+            }}
+          >
+            {showAnswers ? "Hide" : "Show"} Answers
           </button>
         </div>
         <p className="text-xl">Note Mode: {noteMode ? "ON" : "OFF"}</p>

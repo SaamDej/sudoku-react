@@ -14,8 +14,10 @@ function keyBoardHandler(
   noteMode: boolean,
   notes: boolean[][],
   setNotes: React.Dispatch<React.SetStateAction<boolean[][]>>,
+  showAnswer: boolean,
   keyMap: Map<string, number>
 ) {
+  console.log(showAnswer);
   function checkEmpty(arr: boolean[]) {
     return arr.every((i) => i === false);
   }
