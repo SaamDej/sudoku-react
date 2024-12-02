@@ -8,10 +8,15 @@ interface SudokuBoardProps {
   notes: boolean[][];
   setNotes: React.Dispatch<React.SetStateAction<boolean[][]>>;
   setDispArray: React.Dispatch<React.SetStateAction<number[]>>;
-  setCurr: React.Dispatch<React.SetStateAction<SudokuCellAttributes | null>>;
+  setCurr: React.Dispatch<
+    React.SetStateAction<{
+      attributes: SudokuCellAttributes;
+      ref: HTMLDivElement;
+    } | null>
+  >;
   focus: () => void;
   keyPress: (e: React.KeyboardEvent) => void;
-  cellRefs: any;
+  cellRefs: React.MutableRefObject<HTMLDivElement[]>;
   noteMode?: boolean;
   showAnswers: boolean;
   keyMap: Map<string, number>;
@@ -59,7 +64,7 @@ const SudokuBoard = ({
       shared={false}
       size={"left"}
       focus={() => {
-        setCurr(cell);
+        setCurr({ attributes: cell, ref: cellRefs.current[index] });
       }}
       keyPress={(e) => {
         keyBoardHandler(

@@ -7,40 +7,60 @@ import exampleBoard, { examplePrefill } from "./utilities/exampleBoard";
 import NumPad from "./components/NumPad";
 import checkEmpty from "./utilities/checkEmpty";
 import Modal from "./components/Modal";
+import { Switch } from "@headlessui/react";
 
 function App() {
-  const keyMap = new Map();
-  for (let i = 0; i < 9; i++) {
-    keyMap.set(`Digit${i + 1}`, i + 1);
-  }
   const refs = useRef<HTMLDivElement[]>([]);
-  const [currentCell, setCurrentCell] = useState<SudokuCellAttributes | null>(
-    null
+  const [showAnswers, setShowAnswers] = useState<boolean>(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [noteMode, setNoteMode] = useState<boolean>(false);
+  const [notes, setNotes] = useState<boolean[][]>(
+    Array.from({ length: 81 }, () => Array(9).fill(false))
   );
+  const [currentCell, setCurrentCell] = useState<{
+    attributes: SudokuCellAttributes;
+    ref: HTMLDivElement;
+  } | null>(null);
   const board: SudokuCellAttributes[] = useMemo(
     () => setBoardLayout(exampleBoard, examplePrefill),
     []
   );
-  const showAnswersArray: number[] = board.map((cell) => cell.answer);
-  function shiftHold(e: KeyboardEvent) {
-    if (e.key === "Shift" && !e.repeat) {
-      setNoteMode((prev) => !prev);
-    }
-  }
+  // const showAnswersArray: number[] = board.map((cell) => cell.answer);
+
   const [displayCells, setDisplayCells] = useState<number[]>(
     board.map((cell) => {
       return cell.displayNumber;
     })
   );
-  const [showAnswers, setShowAnswers] = useState<boolean>(false);
-  const [notes, setNotes] = useState<boolean[][]>(
-    Array.from({ length: 81 }, () => Array(9).fill(false))
-  );
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [noteMode, setNoteMode] = useState<boolean>(false);
+  const [conflicts, setConflicts] = useState<boolean[]>(Array(81).fill(false));
+  const keyMap = new Map();
+  for (let i = 0; i < 9; i++) {
+    keyMap.set(`Digit${i + 1}`, i + 1);
+  }
+  // useEffect(() => {
+  //   function focus(e: any) {
+  //     if (
+  //       refs.current &&
+  //       currentCell &&
+  //       !refs.current[currentCell.attributes.index].contains(e.currentTarget)
+  //     ) {
+  //       setCurrentCell(null);
+  //     }
+  //   }
+  //   document.addEventListener("mousedown", focus);
+  //   return () => {
+  //     document.removeEventListener("mousedown", focus);
+  //   };
+  // });
+  function shiftHold(e: KeyboardEvent) {
+    if (e.key === "Shift" && !e.repeat) {
+      setNoteMode((prev) => !prev);
+    }
+  }
   useEffect(() => {
     document.addEventListener("keydown", shiftHold);
     document.addEventListener("keyup", shiftHold);
+
     return () => {
       document.removeEventListener("keydown", shiftHold);
       document.removeEventListener("keyup", shiftHold);
@@ -63,13 +83,13 @@ function App() {
           <>
             <p className="pt-3 text-left">
               Sudoku is a puzzle game where the player must fill every empty
-              cell (square) on a <b>9 x 9 cell grid</b> <br /> split into a{" "}
+              cell (square) on a <b>9 x 9 cell grid</b> split into a{" "}
               <b>3 x 3 grid of cell blocks</b> (each being a 3 x 3 cell grid)
-              with <b>a number between 1 and 9</b>. <br />
-              Some of the cells have their answers already given. These{" "}
-              <b>prefilled cells</b> are indicated by their answers being
-              displayed in <b>black</b> and <b>cannot be edited</b>. Numbers
-              inputted into empty (editable) cells will be displayed with a{" "}
+              with <b>a number between 1 and 9</b>. Some of the cells have their
+              answers already given. These <b>prefilled cells</b> are indicated
+              by their answers being displayed in <b>black</b> and{" "}
+              <b>cannot be edited</b>. Numbers inputted into empty (editable)
+              cells will be displayed with a{" "}
               <b className="text-blue-500">blue color</b> to indicate that they
               have been <b>inputted by the player</b>.
             </p>
@@ -91,10 +111,8 @@ function App() {
             </p>
             <p>
               Once the player{" "}
-              <b>fills every empty cell without any having conflicting cells</b>
-              , <br />
-              only then is the puzzle{" "}
-              <b className="text-green-600">completed</b>.
+              <b>fills every empty cell without having any conflicting cells</b>
+              , the puzzle is <b className="text-green-600">complete</b>.
             </p>
             <h1 className="text-xl font-semibold underline">Controls</h1>
             <p>
@@ -162,29 +180,42 @@ function App() {
           keyMap={keyMap}
         />
         <div className="flex flex-row gap-x-5">
-          <button
+          {/* <button
             className="rounded-xl bg-blue-500 p-3 min-w-48 text-white text-lg hover:bg-blue-700"
             onClick={() => setNoteMode(!noteMode)}
           >
             Toggle Note Mode
-          </button>
+          </button> */}
+          <div className="flex flex-col items-center">
+            Note Mode
+            <Switch
+              checked={noteMode}
+              onChange={() => setNoteMode(!noteMode)}
+              className=" transition-colors group inline-flex h-7 w-14 items-center rounded-full bg-gray-300 data-[checked]:bg-blue-600 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50"
+            >
+              <span className="size-5 translate-x-1 rounded-full bg-white transition group-data-[checked]:translate-x-8" />
+            </Switch>
+          </div>
           <button
             className="rounded-xl bg-red-500 p-3 text-white text-lg  hover:bg-red-700"
             onMouseDown={(e: React.MouseEvent) => {
               e.preventDefault();
               if (currentCell) {
-                if (!currentCell.prefilled) {
-                  if (displayCells[currentCell.index] != 0) {
+                if (!currentCell.attributes.prefilled) {
+                  if (displayCells[currentCell.attributes.index] != 0) {
                     const newArray = displayCells.map((value, i) => {
-                      if (i === currentCell.index) {
+                      if (i === currentCell.attributes.index) {
                         return 0;
                       } else return value;
                     });
                     setDisplayCells(newArray);
-                  } else if (checkEmpty(notes[currentCell.index]) != true) {
-                    const clearedArray = notes[currentCell.index].fill(false);
+                  } else if (
+                    checkEmpty(notes[currentCell.attributes.index]) != true
+                  ) {
+                    const clearedArray =
+                      notes[currentCell.attributes.index].fill(false);
                     const newNotes = notes.map((noteArray, i) => {
-                      if (i === currentCell.index) {
+                      if (i === currentCell.attributes.index) {
                         return clearedArray;
                       } else return noteArray;
                     });
@@ -196,16 +227,31 @@ function App() {
           >
             Clear Cell
           </button>
-          <button
+          {/* <button
             className="rounded-xl bg-blue-500 p-3 text-white text-center hover:bg-blue-700 min-w-48 text-lg"
             onMouseDown={() => {
               setShowAnswers(!showAnswers);
             }}
           >
             {showAnswers ? "Hide" : "Show"} Answers
-          </button>
+          </button> */}
+          <div className="flex flex-col items-center">
+            Show Answers
+            <Switch
+              checked={showAnswers}
+              onChange={() => {
+                setShowAnswers(!showAnswers);
+              }}
+              onMouseDown={(e) => {
+                e.preventDefault();
+              }}
+              className=" transition-colors group inline-flex h-7 w-14 items-center rounded-full bg-gray-300 data-[checked]:bg-blue-600 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50"
+            >
+              <span className="size-5 translate-x-1 rounded-full bg-white transition group-data-[checked]:translate-x-8" />
+            </Switch>
+          </div>
         </div>
-        <p className="text-xl">Note Mode: {noteMode ? "ON" : "OFF"}</p>
+        {/* <p className="text-xl">Note Mode: {noteMode ? "ON" : "OFF"}</p> */}
       </div>
       <div className="pt-3">
         <NumPad
@@ -215,9 +261,11 @@ function App() {
           notes={notes}
           setNotes={setNotes}
           noteMode={noteMode}
+          board={board}
         />
         <h1 className="pt-3">
-          Currently Selected Cell: {currentCell ? currentCell.index : "none"}
+          Currently Selected Cell:{" "}
+          {currentCell ? currentCell.attributes.index : "none"}
         </h1>
       </div>
       {console.count("counter")}

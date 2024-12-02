@@ -1,5 +1,5 @@
 import { SudokuCellAttributes } from "../components/SudokuCell";
-
+import updateNotes from "./updateNotes";
 //This function handles keyboard inputs when interacting with the sudoku cells.
 // WASD and Arrow Keys used for navigation
 // Holding Shift will toggle between Pencil (note) and Default input.
@@ -99,6 +99,17 @@ function keyBoardHandler(
               } else return value;
             });
             setDisplayNumbers(newArray);
+            updateNotes(
+              notes,
+              setNotes,
+              parsedKey,
+              index,
+              board[index].row,
+              board[index].column,
+              board[index].block,
+              displayNumbers,
+              board
+            );
           }
         }
       }
