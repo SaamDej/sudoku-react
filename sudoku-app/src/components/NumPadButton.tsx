@@ -25,7 +25,7 @@ const NumPadButton = ({
   };
   return (
     <button
-      className={`transition ease-in-out drop-shadow-[20px_20px_1px_rgba(0,0,0,0.5)] hover:drop-shadow-[0_0_0_rgba(0,0,0,0.5)] rounded-lg border-4 border-gray-700 ${size} ${fontSize} ${disabled ? styles.disabled : styles.enabled} `}
+      className={`transition ease-in-out rounded-lg border-4 border-gray-700 ${size} ${fontSize} ${disabled ? styles.disabled : styles.enabled} `}
       disabled={answerCount < 9 ? false : true}
       onMouseDown={(e) => {
         onClick(e);
