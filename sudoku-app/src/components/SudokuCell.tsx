@@ -96,6 +96,7 @@ const SudokuCell = ({
     <div
       ref={cellRef}
       className={
+        "transition ease-out " +
         cellSize +
         " " +
         (conflict

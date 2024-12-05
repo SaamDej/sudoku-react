@@ -165,21 +165,23 @@ function App() {
             </p>
           </>
         </Modal>
-        <SudokuBoard
-          cellArray={board}
-          dispArray={displayCells}
-          notes={notes}
-          setNotes={setNotes}
-          setDispArray={setDisplayCells}
-          setCurr={setCurrentCell}
-          focus={() => {}}
-          keyPress={(e) => {}}
-          cellRefs={refs}
-          noteMode={noteMode}
-          showAnswers={showAnswers}
-          keyMap={keyMap}
-        />
-        <div className="flex flex-row gap-x-5">
+        <div className="">
+          <SudokuBoard
+            cellArray={board}
+            dispArray={displayCells}
+            notes={notes}
+            setNotes={setNotes}
+            setDispArray={setDisplayCells}
+            setCurr={setCurrentCell}
+            focus={() => {}}
+            keyPress={(e) => {}}
+            cellRefs={refs}
+            noteMode={noteMode}
+            showAnswers={showAnswers}
+            keyMap={keyMap}
+          />
+        </div>
+        <div className="z-10 flex flex-row gap-x-5 filter-none">
           {/* <button
             className="rounded-xl bg-blue-500 p-3 min-w-48 text-white text-lg hover:bg-blue-700"
             onClick={() => setNoteMode(!noteMode)}

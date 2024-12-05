@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 interface NumPadButtonprops {
   number: number;
@@ -17,16 +17,23 @@ const NumPadButton = ({
   answerCount,
   onClick = (e: any) => {},
 }: NumPadButtonprops) => {
+  const [clicked, setClicked] = useState(false);
+
   const styles = {
-    enabled:
-      "transition ease-in-out bg-white hover:text-white hover:bg-blue-500",
+    enabled: `bg-white hover:text-white ${clicked ? "hover:bg-blue-700" : "hover:bg-blue-500"}`,
     disabled: "bg-gray-300 text-gray-500",
   };
   return (
     <button
-      className={`rounded-lg border-4 border-gray-700 ${size} ${fontSize} ${disabled ? styles.disabled : styles.enabled} `}
+      className={`transition ease-in-out drop-shadow-[20px_20px_1px_rgba(0,0,0,0.5)] hover:drop-shadow-[0_0_0_rgba(0,0,0,0.5)] rounded-lg border-4 border-gray-700 ${size} ${fontSize} ${disabled ? styles.disabled : styles.enabled} `}
       disabled={answerCount < 9 ? false : true}
-      onMouseDown={onClick}
+      onMouseDown={(e) => {
+        onClick(e);
+        setClicked(true);
+      }}
+      onMouseUp={() => {
+        setClicked(false);
+      }}
     >
       {number}
     </button>
