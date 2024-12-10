@@ -8,7 +8,8 @@ import NumPad from "./components/NumPad";
 import checkEmpty from "./utilities/checkEmpty";
 import Modal from "./components/Modal";
 import { Switch } from "@headlessui/react";
-
+import SudokuButton from "./components/SudokuButton";
+import eraser from "./assets/eraser.svg";
 function App() {
   const refs = useRef<HTMLDivElement[]>([]);
   const [showAnswers, setShowAnswers] = useState<boolean>(false);
@@ -69,16 +70,14 @@ function App() {
 
   return (
     <>
-      <div className="flex items-center flex-col space-y-4">
+      <div className="font-libreFranklin flex items-center flex-col space-y-4">
         <h1 className="text-3xl font-sans">Sudoku React</h1>
-        <button
-          className={
-            "bg-green-500 text-white p-2 rounded-xl hover:bg-green-700"
-          }
-          onClick={() => setIsModalOpen(true)}
+        <SudokuButton
+          buttonStyle="transition p-2 rounded-xl"
+          buttonMouseDown={() => setIsModalOpen(true)}
         >
           How to Play
-        </button>
+        </SudokuButton>
         <Modal isOpen={isModalOpen} setIsOpen={setIsModalOpen}>
           <>
             <p className="pt-3 text-left">
@@ -182,13 +181,7 @@ function App() {
           />
         </div>
         <div className="z-10 flex flex-row gap-x-5 filter-none">
-          {/* <button
-            className="rounded-xl bg-blue-500 p-3 min-w-48 text-white text-lg hover:bg-blue-700"
-            onClick={() => setNoteMode(!noteMode)}
-          >
-            Toggle Note Mode
-          </button> */}
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center w-28">
             Note Mode
             <Switch
               checked={noteMode}
@@ -198,9 +191,14 @@ function App() {
               <span className="size-5 translate-x-1 rounded-full bg-white transition group-data-[checked]:translate-x-8" />
             </Switch>
           </div>
-          <button
-            className="rounded-xl bg-red-500 p-3 text-white text-lg  hover:bg-red-700"
-            onMouseDown={(e: React.MouseEvent) => {
+          <SudokuButton
+            buttonStyle="transition rounded-xl p-3 text-lg"
+            bgColor="bg-red-500"
+            bgHover="hover:bg-red-600"
+            bgActive="hover:bg-red-700"
+            textColor="text-white"
+            textHover="text-white"
+            buttonMouseDown={(e: React.MouseEvent) => {
               e.preventDefault();
               if (currentCell) {
                 if (!currentCell.attributes.prefilled) {
@@ -227,17 +225,9 @@ function App() {
               }
             }}
           >
-            Clear Cell
-          </button>
-          {/* <button
-            className="rounded-xl bg-blue-500 p-3 text-white text-center hover:bg-blue-700 min-w-48 text-lg"
-            onMouseDown={() => {
-              setShowAnswers(!showAnswers);
-            }}
-          >
-            {showAnswers ? "Hide" : "Show"} Answers
-          </button> */}
-          <div className="flex flex-col items-center">
+            <img src={eraser} alt="Clear Cell" />
+          </SudokuButton>
+          <div className="flex flex-col items-center w-28">
             Show Answers
             <Switch
               checked={showAnswers}
@@ -253,7 +243,6 @@ function App() {
             </Switch>
           </div>
         </div>
-        {/* <p className="text-xl">Note Mode: {noteMode ? "ON" : "OFF"}</p> */}
       </div>
       <div className="pt-3">
         <NumPad

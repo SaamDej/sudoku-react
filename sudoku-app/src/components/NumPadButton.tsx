@@ -34,6 +34,9 @@ const NumPadButton = ({
       onMouseUp={() => {
         setClicked(false);
       }}
+      onMouseLeave={() => {
+        setClicked(false);
+      }}
     >
       {number}
     </button>
