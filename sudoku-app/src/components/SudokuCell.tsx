@@ -21,11 +21,13 @@ interface SudokuCellProps {
   prefilled: boolean;
   conflict: boolean;
   shared: boolean;
-  focus: () => void;
-  keyPress: (e: React.KeyboardEvent) => void;
+  focused?: boolean;
+  //focus: () => void;
+  //keyPress: (e: React.KeyboardEvent) => void;
   cellRef: any;
   notes?: boolean[];
   showAnswer: boolean;
+  onClick: () => void;
 }
 
 const SudokuCell = ({
@@ -39,8 +41,10 @@ const SudokuCell = ({
   prefilled,
   conflict,
   shared,
-  focus,
-  keyPress,
+  focused = false,
+  //focus,
+  //keyPress,
+  onClick,
   cellRef,
   notes = Array(9).fill(false), //[false, false, false, false, false, false, false, false, false]
   showAnswer,
@@ -60,12 +64,15 @@ const SudokuCell = ({
   const noteText = "select-none grid grid-cols-3 grid-rows-3 gap-x-4";
   const cellSize =
     "size-16 flex items-center justify-center text-center outline-none box-content";
-  const cellDefault = "bg-white focus:bg-yellow-200 text-blue-500";
+  const cellDefault = `${focused ? "bg-yellow-200" : "bg-white"} text-blue-500`;
   const cellConflict =
-    " bg-red-400 focus:bg-red-500 " + (!prefilled ? " text-red-900" : "");
-  const cellShared = "bg-blue-300 focus:bg-blue-400";
-  const cellPrefilled = "bg-white focus:bg-yellow-200";
-  const cellAnswerShown = "text-blue-200";
+    (!focused ? " bg-red-300 " : "bg-red-400 ") +
+    (!prefilled ? " text-red-900" : "");
+  const cellShared = !focused ? "bg-blue-300" : "bg-blue-400";
+  const cellPrefilled = !focused ? "bg-white" : "bg-yellow-200";
+  // const cellAnswerShown = showAnswer
+  //   ? "opacitiy-100 text-blue-200 "
+  //   : "opacity-0 ";
   function setDisplay(dn: number): string {
     return dn > 0 && dn < 10 ? dn.toString() : "";
   }
@@ -87,11 +94,11 @@ const SudokuCell = ({
       </div>
     )
   );
-  function AnswerText() {
-    return (
-      <p className={normalText + " " + cellAnswerShown}>{setDisplay(answer)}</p>
-    );
-  }
+  // const AnswerText() {
+  //   return (
+
+  //   );
+  // }
   return (
     <div
       ref={cellRef}
@@ -110,18 +117,26 @@ const SudokuCell = ({
         calculateBorder(row, column) +
         " border-slate-400"
       }
-      onFocus={focus}
-      onKeyDown={keyPress}
-      tabIndex={0}
+      //onFocus={focus}
+      // onKeyDown={keyPress}
+      //tabIndex={0}
+      onClick={onClick}
     >
       {displayNumber > 0 && displayNumber < 10 ? (
-        <p className={normalText}>{setDisplay(displayNumber)}</p>
+        <p className={normalText + " z-10 "}>{setDisplay(displayNumber)}</p>
       ) : (
         <>
-          {showAnswer && displayNumber === 0 && <AnswerText></AnswerText>}
           <div className={noteText + " fixed"}>{cellNotes}</div>
         </>
       )}
+      <p
+        className={
+          `transition-opacity ease-out fixed duration-300 z-0 text-blue-200 ${showAnswer && !prefilled && displayNumber == 0 ? "opacity-100" : "opacity-0"} ` +
+          normalText
+        }
+      >
+        {setDisplay(answer)}
+      </p>
     </div>
   );
 };

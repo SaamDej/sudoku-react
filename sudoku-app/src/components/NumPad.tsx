@@ -3,7 +3,7 @@ import NumPadButton from "./NumPadButton";
 import { SudokuCellAttributes } from "./SudokuCell";
 import updateNotes from "../utilities/updateNotes";
 interface NumPadProps {
-  currCell: { attributes: SudokuCellAttributes; ref: HTMLDivElement } | null;
+  currCell: { attributes: SudokuCellAttributes; ref: HTMLDivElement | null };
   displayArray?: number[];
   setDisplay: React.Dispatch<React.SetStateAction<number[]>>;
   notes: boolean[][];

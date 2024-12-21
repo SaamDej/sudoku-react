@@ -11,6 +11,12 @@ function keyBoardHandler(
   board: SudokuCellAttributes[],
   displayNumbers: number[],
   setDisplayNumbers: React.Dispatch<React.SetStateAction<number[]>>,
+  setCurrentCell: React.Dispatch<
+    React.SetStateAction<{
+      attributes: SudokuCellAttributes;
+      ref: HTMLDivElement;
+    }>
+  >,
   noteMode: boolean,
   notes: boolean[][],
   setNotes: React.Dispatch<React.SetStateAction<boolean[][]>>,
@@ -25,24 +31,39 @@ function keyBoardHandler(
   switch (pressedKey) {
     case "w":
     case "arrowup": {
-      if (refCurrents[index - 9]) refCurrents[index - 9].focus();
+      if (refCurrents[index - 9])
+        setCurrentCell({
+          attributes: board[index - 9],
+          ref: refCurrents[index - 9],
+        });
       break;
     }
     case "a":
     case "arrowleft": {
       if (refCurrents[index - 1] && board[index - 1].row === board[index].row)
-        refCurrents[index - 1].focus();
+        setCurrentCell({
+          attributes: board[index - 1],
+          ref: refCurrents[index - 1],
+        });
       break;
     }
     case "s":
     case "arrowdown": {
-      if (refCurrents[index + 9]) refCurrents[index + 9].focus();
+      if (refCurrents[index + 9]) {
+        setCurrentCell({
+          attributes: board[index + 9],
+          ref: refCurrents[index + 9],
+        });
+      }
       break;
     }
     case "d":
     case "arrowright": {
       if (refCurrents[index + 1] && board[index + 1].row === board[index].row)
-        refCurrents[index + 1].focus();
+        setCurrentCell({
+          attributes: board[index + 1],
+          ref: refCurrents[index + 1],
+        });
       break;
     }
     case "backspace": {

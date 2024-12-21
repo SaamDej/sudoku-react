@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
-import { SudokuCellAttributes } from "./components/SudokuCell";
-import SudokuBoard from "./components/SudokuBoard(OLD)";
+import SudokuCell, { SudokuCellAttributes } from "./components/SudokuCell";
+//import SudokuBoard from "./components/SudokuBoard(OLD)";
 import setBoardLayout from "./utilities/setBoardLayout";
 import exampleBoard, { examplePrefill } from "./utilities/exampleBoard";
 import NumPad from "./components/NumPad";
@@ -10,31 +10,96 @@ import Modal from "./components/Modal";
 import { Switch } from "@headlessui/react";
 import SudokuButton from "./components/SudokuButton";
 import eraser from "./assets/eraser.svg";
+import useKeyBoardHandler from "./hooks/useKeyboardHandler";
+import keyBoardHandler from "./utilities/keyBoardHandler";
+import conflictHandler from "./utilities/conflictHandler";
 function App() {
-  const refs = useRef<HTMLDivElement[]>([]);
-  const [showAnswers, setShowAnswers] = useState<boolean>(false);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [noteMode, setNoteMode] = useState<boolean>(false);
-  const [notes, setNotes] = useState<boolean[][]>(
-    Array.from({ length: 81 }, () => Array(9).fill(false))
-  );
-  const [currentCell, setCurrentCell] = useState<{
-    attributes: SudokuCellAttributes;
-    ref: HTMLDivElement;
-  } | null>(null);
   const board: SudokuCellAttributes[] = useMemo(
     () => setBoardLayout(exampleBoard, examplePrefill),
     []
   );
-  // const showAnswersArray: number[] = board.map((cell) => cell.answer);
+  const refs = useRef<HTMLDivElement[]>([]);
+  const [showAnswers, setShowAnswers] = useState<boolean>(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [noteMode, setNoteMode] = useState<boolean>(false);
+  const [input, setInput] = useState<string>("none");
+  const [notes, setNotes] = useState<boolean[][]>(
+    Array.from({ length: 81 }, () => Array(9).fill(false))
+  );
 
   const [displayCells, setDisplayCells] = useState<number[]>(
     board.map((cell) => {
       return cell.displayNumber;
     })
   );
-  const [conflicts, setConflicts] = useState<boolean[]>(Array(81).fill(false));
+  const [currentCell, setCurrentCell] = useState<{
+    attributes: SudokuCellAttributes;
+    ref: HTMLDivElement;
+  }>({
+    attributes: board[0],
+    ref: refs.current[0],
+  });
+  const cells = board.map((cell, index) => (
+    <SudokuCell
+      index={cell.index}
+      row={cell.row}
+      column={cell.column}
+      block={cell.block}
+      answer={cell.answer}
+      displayNumber={displayCells[index]}
+      prefilled={cell.prefilled}
+      conflict={
+        displayCells[cell.index] != 0
+          ? conflictHandler(
+              cell.row,
+              cell.column,
+              cell.block,
+              cell.index,
+              displayCells,
+              board
+            )
+          : false
+      }
+      shared={false}
+      focused={currentCell.attributes.index == cell.index ? true : false}
+      size={"left"}
+      onClick={() => {
+        if (currentCell.attributes.index != cell.index)
+          setCurrentCell({ attributes: cell, ref: refs.current[cell.index] });
+      }}
+      cellRef={(cell: any) => refs.current.push(cell)}
+      notes={notes[index]}
+      showAnswer={showAnswers}
+      key={index}
+    />
+  ));
+
+  // const showAnswersArray: number[] = board.map((cell) => cell.answer);
+
   const keyMap = new Map();
+
+  const swagFunction = (event: React.KeyboardEvent) => {
+    // console.log(`${event.key} is swag`);
+    // setInput(`${event.key} is swag`);
+    keyBoardHandler(
+      event,
+      currentCell.attributes.index,
+      currentCell.attributes.prefilled,
+      refs.current,
+      board,
+      displayCells,
+      setDisplayCells,
+      setCurrentCell,
+      noteMode,
+      notes,
+      setNotes,
+      showAnswers,
+      keyMap
+    );
+  };
+
+  const [conflicts, setConflicts] = useState<boolean[]>(Array(81).fill(false));
+
   for (let i = 0; i < 9; i++) {
     keyMap.set(`Digit${i + 1}`, i + 1);
   }
@@ -58,6 +123,20 @@ function App() {
       setNoteMode((prev) => !prev);
     }
   }
+
+  useKeyBoardHandler(
+    [
+      "ArrowUp",
+      "ArrowDown",
+      "ArrowLeft",
+      "ArrowRight",
+      "Backspace",
+      ...Array(9)
+        .fill("")
+        .map((_, i) => `${i + 1}`),
+    ],
+    swagFunction
+  );
   useEffect(() => {
     document.addEventListener("keydown", shiftHold);
     document.addEventListener("keyup", shiftHold);
@@ -164,21 +243,9 @@ function App() {
             </p>
           </>
         </Modal>
-        <div className="">
-          <SudokuBoard
-            cellArray={board}
-            dispArray={displayCells}
-            notes={notes}
-            setNotes={setNotes}
-            setDispArray={setDisplayCells}
-            setCurr={setCurrentCell}
-            focus={() => {}}
-            keyPress={(e) => {}}
-            cellRefs={refs}
-            noteMode={noteMode}
-            showAnswers={showAnswers}
-            keyMap={keyMap}
-          />
+        <div className="sudoku-board border-black bg-black border-4 ">
+          {/* <div className="z-10 size-full box-border bg-gray-500"></div> */}
+          <div className="board-grid">{cells}</div>
         </div>
         <div className="z-10 flex flex-row gap-x-5 filter-none">
           <div className="flex flex-col items-center w-28">
@@ -258,6 +325,7 @@ function App() {
           Currently Selected Cell:{" "}
           {currentCell ? currentCell.attributes.index : "none"}
         </h1>
+        <h1 className="pt-3">{input}</h1>
       </div>
       {console.count("counter")}
     </>
