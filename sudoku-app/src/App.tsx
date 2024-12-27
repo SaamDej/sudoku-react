@@ -18,11 +18,18 @@ function App() {
     () => setBoardLayout(exampleBoard, examplePrefill),
     []
   );
+  const keyMap = useMemo(() => {
+    const km = new Map();
+    for (let i = 0; i < 9; i++) {
+      km.set(`Digit${i + 1}`, i + 1);
+    }
+    return km;
+  }, []);
   const refs = useRef<HTMLDivElement[]>([]);
   const [showAnswers, setShowAnswers] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [noteMode, setNoteMode] = useState<boolean>(false);
-  const [input, setInput] = useState<string>("none");
+  //const [input, setInput] = useState<string>("none");
   const [notes, setNotes] = useState<boolean[][]>(
     Array.from({ length: 81 }, () => Array(9).fill(false))
   );
@@ -39,48 +46,49 @@ function App() {
     attributes: board[0],
     ref: refs.current[0],
   });
-  const cells = board.map((cell, index) => (
-    <SudokuCell
-      index={cell.index}
-      row={cell.row}
-      column={cell.column}
-      block={cell.block}
-      answer={cell.answer}
-      displayNumber={displayCells[index]}
-      prefilled={cell.prefilled}
-      conflict={
-        displayCells[cell.index] != 0
-          ? conflictHandler(
-              cell.row,
-              cell.column,
-              cell.block,
-              cell.index,
-              displayCells,
-              board
-            )
-          : false
-      }
-      shared={false}
-      focused={currentCell.attributes.index == cell.index ? true : false}
-      size={"left"}
-      onClick={() => {
-        if (currentCell.attributes.index != cell.index)
-          setCurrentCell({ attributes: cell, ref: refs.current[cell.index] });
-      }}
-      cellRef={(cell: any) => refs.current.push(cell)}
-      notes={notes[index]}
-      showAnswer={showAnswers}
-      key={index}
-    />
-  ));
+  const cells = useMemo(
+    () =>
+      board.map((cell, index) => (
+        <SudokuCell
+          index={cell.index}
+          row={cell.row}
+          column={cell.column}
+          block={cell.block}
+          answer={cell.answer}
+          displayNumber={displayCells[index]}
+          prefilled={cell.prefilled}
+          conflict={
+            displayCells[cell.index] != 0
+              ? conflictHandler(
+                  cell.row,
+                  cell.column,
+                  cell.block,
+                  cell.index,
+                  displayCells,
+                  board
+                )
+              : false
+          }
+          shared={false}
+          focused={currentCell.attributes.index == cell.index ? true : false}
+          size={"16"}
+          onClick={() => {
+            if (currentCell.attributes.index != cell.index)
+              setCurrentCell({
+                attributes: cell,
+                ref: refs.current[cell.index],
+              });
+          }}
+          cellRef={(cell: any) => refs.current.push(cell)}
+          notes={notes[index]}
+          showAnswer={showAnswers}
+          key={index}
+        />
+      )),
+    [showAnswers, notes, displayCells, currentCell]
+  );
 
-  // const showAnswersArray: number[] = board.map((cell) => cell.answer);
-
-  const keyMap = new Map();
-
-  const swagFunction = (event: React.KeyboardEvent) => {
-    // console.log(`${event.key} is swag`);
-    // setInput(`${event.key} is swag`);
+  const keyboardFunction = (event: React.KeyboardEvent) => {
     keyBoardHandler(
       event,
       currentCell.attributes.index,
@@ -98,26 +106,8 @@ function App() {
     );
   };
 
-  const [conflicts, setConflicts] = useState<boolean[]>(Array(81).fill(false));
+  //const [conflicts, setConflicts] = useState<boolean[]>(Array(81).fill(false));
 
-  for (let i = 0; i < 9; i++) {
-    keyMap.set(`Digit${i + 1}`, i + 1);
-  }
-  // useEffect(() => {
-  //   function focus(e: any) {
-  //     if (
-  //       refs.current &&
-  //       currentCell &&
-  //       !refs.current[currentCell.attributes.index].contains(e.currentTarget)
-  //     ) {
-  //       setCurrentCell(null);
-  //     }
-  //   }
-  //   document.addEventListener("mousedown", focus);
-  //   return () => {
-  //     document.removeEventListener("mousedown", focus);
-  //   };
-  // });
   function shiftHold(e: KeyboardEvent) {
     if (e.key === "Shift" && !e.repeat) {
       setNoteMode((prev) => !prev);
@@ -131,11 +121,15 @@ function App() {
       "ArrowLeft",
       "ArrowRight",
       "Backspace",
+      "w",
+      "a",
+      "s",
+      "d",
       ...Array(9)
         .fill("")
         .map((_, i) => `${i + 1}`),
     ],
-    swagFunction
+    keyboardFunction
   );
   useEffect(() => {
     document.addEventListener("keydown", shiftHold);
@@ -146,6 +140,10 @@ function App() {
       document.removeEventListener("keyup", shiftHold);
     };
   }, []);
+
+  {
+    console.count("counter");
+  }
 
   return (
     <>
@@ -244,10 +242,9 @@ function App() {
           </>
         </Modal>
         <div className="sudoku-board border-black bg-black border-4 ">
-          {/* <div className="z-10 size-full box-border bg-gray-500"></div> */}
           <div className="board-grid">{cells}</div>
         </div>
-        <div className="z-10 flex flex-row gap-x-5 filter-none">
+        <div className="z-0 flex flex-row gap-x-5 filter-none">
           <div className="flex flex-col items-center w-28">
             Note Mode
             <Switch
@@ -325,9 +322,22 @@ function App() {
           Currently Selected Cell:{" "}
           {currentCell ? currentCell.attributes.index : "none"}
         </h1>
-        <h1 className="pt-3">{input}</h1>
+        <div className="pt-3">
+          <SudokuButton
+            buttonStyle="p-3 rounded-xl"
+            buttonMouseDown={() => {
+              setDisplayCells(
+                board.map((cell) => {
+                  return cell.displayNumber;
+                })
+              );
+              setNotes(Array.from({ length: 81 }, () => Array(9).fill(false)));
+            }}
+          >
+            Reset
+          </SudokuButton>
+        </div>
       </div>
-      {console.count("counter")}
     </>
   );
 }
