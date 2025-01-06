@@ -22,8 +22,6 @@ interface SudokuCellProps {
   conflict: boolean;
   shared: boolean;
   focused?: boolean;
-  //focus: () => void;
-  //keyPress: (e: React.KeyboardEvent) => void;
   cellRef: any;
   notes?: boolean[];
   showAnswer: boolean;
@@ -42,14 +40,11 @@ const SudokuCell = ({
   conflict,
   shared,
   focused = false,
-  //focus,
-  //keyPress,
   onClick,
   cellRef,
   notes = Array(9).fill(false), //[false, false, false, false, false, false, false, false, false]
   showAnswer,
 }: SudokuCellProps) => {
-  // console.log("cell:" + showAnswer.toString());
   const borderTypes = [
     ["border-r-2 border-b-2", "border-b-2", "border-l-2 border-b-2"],
     ["border-r-2", "", "border-l-2"],
@@ -69,9 +64,6 @@ const SudokuCell = ({
     (!prefilled ? " text-red-900" : "");
   const cellShared = !focused ? "bg-blue-300" : "bg-blue-400";
   const cellPrefilled = !focused ? "bg-white" : "bg-yellow-200";
-  // const cellAnswerShown = showAnswer
-  //   ? "opacitiy-100 text-blue-200 "
-  //   : "opacity-0 ";
   function setDisplay(dn: number): string {
     return dn > 0 && dn < 10 ? dn.toString() : "";
   }
@@ -93,11 +85,14 @@ const SudokuCell = ({
       </div>
     )
   );
-  // const AnswerText() {
-  //   return (
-
-  //   );
-  // }
+  let cellColor: string = cellDefault;
+  if (conflict) {
+    cellColor = cellConflict;
+  } else if (shared) {
+    cellColor = cellShared;
+  } else if (prefilled) {
+    cellColor = cellPrefilled;
+  }
   return (
     <div
       ref={cellRef}
@@ -105,20 +100,11 @@ const SudokuCell = ({
         "transition ease-out " +
         cellSize +
         " " +
-        (conflict
-          ? cellConflict
-          : shared
-            ? cellShared
-            : prefilled
-              ? cellPrefilled
-              : cellDefault) +
+        cellColor +
         " " +
         calculateBorder(row, column) +
         " border-slate-400"
       }
-      //onFocus={focus}
-      // onKeyDown={keyPress}
-      //tabIndex={0}
       onClick={onClick}
     >
       {displayNumber > 0 && displayNumber < 10 ? (

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 const useKeyBoardHandler = (
   keys: string[],
@@ -10,7 +10,7 @@ const useKeyBoardHandler = (
     keyMap.set(`Digit${i + 1}`, i + 1);
   }
   const callbackRef = useRef(callback);
-  useLayoutEffect(() => {
+  useEffect(() => {
     callbackRef.current = callback;
   });
 
@@ -27,12 +27,6 @@ const useKeyBoardHandler = (
     },
     [keys]
   );
-
-  //   const handleKeyPress = (event: KeyboardEvent) => {
-  //     if (keys.some((key) => event.key == key)) {
-  //       callbackRef.current(event);
-  //     }
-  //   };
 
   useEffect(() => {
     const targetNode = node ?? document;

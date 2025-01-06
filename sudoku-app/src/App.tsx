@@ -1,11 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
 import SudokuCell, { SudokuCellAttributes } from "./components/SudokuCell";
-//import SudokuBoard from "./components/SudokuBoard(OLD)";
 import setBoardLayout from "./utilities/setBoardLayout";
-import exampleBoard, { examplePrefill } from "./utilities/exampleBoard";
+import { answerString, prefilledString } from "./utilities/exampleBoard2";
 import NumPad from "./components/NumPad";
-import checkEmpty from "./utilities/checkEmpty";
 import Modal from "./components/Modal";
 import { Switch } from "@headlessui/react";
 import SudokuButton from "./components/SudokuButton";
@@ -13,9 +11,10 @@ import eraser from "./assets/eraser.svg";
 import useKeyBoardHandler from "./hooks/useKeyboardHandler";
 import keyBoardHandler from "./utilities/keyBoardHandler";
 import conflictHandler from "./utilities/conflictHandler";
+import eraseCell from "./utilities/eraseCell";
 function App() {
   const board: SudokuCellAttributes[] = useMemo(
-    () => setBoardLayout(exampleBoard, examplePrefill),
+    () => setBoardLayout(answerString, prefilledString),
     []
   );
   const keyMap = useMemo(() => {
@@ -29,11 +28,9 @@ function App() {
   const [showAnswers, setShowAnswers] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [noteMode, setNoteMode] = useState<boolean>(false);
-  //const [input, setInput] = useState<string>("none");
   const [notes, setNotes] = useState<boolean[][]>(
     Array.from({ length: 81 }, () => Array(9).fill(false))
   );
-
   const [displayCells, setDisplayCells] = useState<number[]>(
     board.map((cell) => {
       return cell.displayNumber;
@@ -88,11 +85,10 @@ function App() {
     [showAnswers, notes, displayCells, currentCell]
   );
 
-  const keyboardFunction = (event: React.KeyboardEvent) => {
+  const keyboardFunction = (event: React.KeyboardEvent) =>
     keyBoardHandler(
       event,
-      currentCell.attributes.index,
-      currentCell.attributes.prefilled,
+      currentCell,
       refs.current,
       board,
       displayCells,
@@ -102,35 +98,38 @@ function App() {
       notes,
       setNotes,
       showAnswers,
-      keyMap
+      keyMap,
+      isModalOpen
     );
-  };
 
-  //const [conflicts, setConflicts] = useState<boolean[]>(Array(81).fill(false));
+  const keys = [
+    "ArrowUp",
+    "ArrowDown",
+    "ArrowLeft",
+    "ArrowRight",
+    "Backspace",
+    "w",
+    "W",
+    "a",
+    "A",
+    "s",
+    "S",
+    "d",
+    "D",
+    ...Array(9)
+      .fill("")
+      .map((_, i) => `${i + 1}`),
+  ];
 
   function shiftHold(e: KeyboardEvent) {
     if (e.key === "Shift" && !e.repeat) {
+      e.preventDefault();
       setNoteMode((prev) => !prev);
     }
   }
 
-  useKeyBoardHandler(
-    [
-      "ArrowUp",
-      "ArrowDown",
-      "ArrowLeft",
-      "ArrowRight",
-      "Backspace",
-      "w",
-      "a",
-      "s",
-      "d",
-      ...Array(9)
-        .fill("")
-        .map((_, i) => `${i + 1}`),
-    ],
-    keyboardFunction
-  );
+  useKeyBoardHandler(keys, keyboardFunction);
+
   useEffect(() => {
     document.addEventListener("keydown", shiftHold);
     document.addEventListener("keyup", shiftHold);
@@ -198,9 +197,8 @@ function App() {
             <p>
               <b className="underline">Selecting a cell :</b> Any cell on the
               grid can be selected by either{" "}
-              <b>clicking on cell the with the mouse pointer</b>, or by pressing
-              the <b> Tab Key to focus the grid</b>, and navigating using the
-              following keys:
+              <b>clicking on cell the with the mouse pointer</b>, or by
+              navigating using the following keys:
             </p>
             <ul className="list-disc list-inside">
               <li>
@@ -224,8 +222,8 @@ function App() {
             </p>
             <p>
               <b className="underline">Clear a cell :</b> Press the{" "}
-              <b>Backspace key</b>, or <b>click the "clear cell" button</b>,
-              with a cell selected.
+              <b>Backspace key</b>, or <b>click the eraser button</b>, with a
+              cell selected.
             </p>
             <p>
               <b className="underline">Note Mode :</b> This feature allows the
@@ -263,30 +261,14 @@ function App() {
             textColor="text-white"
             textHover="text-white"
             buttonMouseDown={(e: React.MouseEvent) => {
-              e.preventDefault();
-              if (currentCell) {
-                if (!currentCell.attributes.prefilled) {
-                  if (displayCells[currentCell.attributes.index] != 0) {
-                    const newArray = displayCells.map((value, i) => {
-                      if (i === currentCell.attributes.index) {
-                        return 0;
-                      } else return value;
-                    });
-                    setDisplayCells(newArray);
-                  } else if (
-                    checkEmpty(notes[currentCell.attributes.index]) != true
-                  ) {
-                    const clearedArray =
-                      notes[currentCell.attributes.index].fill(false);
-                    const newNotes = notes.map((noteArray, i) => {
-                      if (i === currentCell.attributes.index) {
-                        return clearedArray;
-                      } else return noteArray;
-                    });
-                    setNotes(newNotes);
-                  }
-                }
-              }
+              eraseCell(
+                e,
+                currentCell,
+                displayCells,
+                setDisplayCells,
+                notes,
+                setNotes
+              );
             }}
           >
             <img src={eraser} alt="Clear Cell" />
