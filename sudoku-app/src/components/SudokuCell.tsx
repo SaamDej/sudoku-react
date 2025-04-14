@@ -57,7 +57,7 @@ const SudokuCell = ({
   }
   const normalText = "select-none text-5xl font-semibold";
   const noteText = "select-none grid grid-cols-3 grid-rows-3 gap-x-4";
-  const cellSize = `size-${size} flex items-center justify-center text-center outline-none box-content`;
+  const cellSize = `size-${size} flex items-center justify-center text-center outline-hidden box-content`;
   const cellDefault = `${focused ? "bg-yellow-200" : "bg-white"} text-blue-500`;
   const cellConflict =
     (!focused ? " bg-red-300 " : "bg-red-400 ") +

@@ -266,9 +266,9 @@ function App() {
             <Switch
               checked={noteMode}
               onChange={() => setNoteMode(!noteMode)}
-              className=" transition-colors group inline-flex h-7 w-14 items-center rounded-full bg-gray-300 data-[checked]:bg-blue-600 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50"
+              className=" transition-colors group inline-flex h-7 w-14 items-center rounded-full bg-gray-300 data-checked:bg-blue-600 data-disabled:cursor-not-allowed data-disabled:opacity-50"
             >
-              <span className="size-5 translate-x-1 rounded-full bg-white transition group-data-[checked]:translate-x-8" />
+              <span className="size-5 translate-x-1 rounded-full bg-white transition group-data-checked:translate-x-8" />
             </Switch>
           </div>
           <SudokuButton
@@ -325,9 +325,9 @@ function App() {
               onMouseDown={(e) => {
                 e.preventDefault();
               }}
-              className=" transition-colors group inline-flex h-7 w-14 items-center rounded-full bg-gray-300 data-[checked]:bg-blue-600 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50"
+              className=" transition-colors group inline-flex h-7 w-14 items-center rounded-full bg-gray-300 data-checked:bg-blue-600 data-disabled:cursor-not-allowed data-disabled:opacity-50"
             >
-              <span className="size-5 translate-x-1 rounded-full bg-white transition group-data-[checked]:translate-x-8" />
+              <span className="size-5 translate-x-1 rounded-full bg-white transition group-data-checked:translate-x-8" />
             </Switch>
           </div>
         </div>

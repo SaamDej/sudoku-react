@@ -16,21 +16,21 @@ interface ModalProps {
 }
 const Modal = ({ isOpen, setIsOpen, children }: ModalProps) => {
   const dialogPanelStyle =
-    "w-full max-w-md bg-white/5 p-6 backdrop-blur-2xl duration-300 ease-out data-[closed]: data-[closed]:opacity-0";
+    "w-full max-w-md bg-white/5 p-6 backdrop-blur-2xl duration-300 ease-out data-[closed]: data-closed:opacity-0";
   return (
     <Dialog
       open={isOpen}
       onClose={() => setIsOpen(false)}
-      className="relative z-50 focus:outline-none"
+      className="relative z-50 focus:outline-hidden"
     >
       <DialogBackdrop
         transition
-        className="fixed inset-0 bg-black/30 transition duration-300 ease-out data-[closed]:opacity-0"
+        className="fixed inset-0 bg-black/30 transition duration-300 ease-out data-closed:opacity-0"
       />
       <div className="fixed inset-0 flex w-screen items-center justify-center p-4">
         <DialogPanel
           transition
-          className="bg-white rounded-3xl px-20 py-6 shadow-md transition duration-300 ease-out data-[closed]:opacity-0 data-[closed]:scale-[0.95] max-h-min overflow-y-auto relative"
+          className="bg-white rounded-3xl px-20 py-6 shadow-md transition duration-300 ease-out data-closed:opacity-0 data-closed:scale-[0.95] max-h-min overflow-y-auto relative"
         >
           <div className="flex flex-row justify-center">
             <DialogTitle
