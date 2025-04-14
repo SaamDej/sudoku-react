@@ -12,7 +12,9 @@ import useKeyBoardHandler from "./hooks/useKeyboardHandler";
 import keyBoardHandler from "./utilities/keyBoardHandler";
 import conflictHandler from "./utilities/conflictHandler";
 import eraseCell from "./utilities/eraseCell";
+import checkSameNumber from "./utilities/checkSameNumber";
 function App() {
+  const maxHistorySize = 10;
   const board: SudokuCellAttributes[] = useMemo(
     () => setBoardLayout(answerString, prefilledString),
     []
@@ -31,6 +33,7 @@ function App() {
   const [notes, setNotes] = useState<boolean[][]>(
     Array.from({ length: 81 }, () => Array(9).fill(false))
   );
+
   const [displayCells, setDisplayCells] = useState<number[]>(
     board.map((cell) => {
       return cell.displayNumber;
@@ -43,6 +46,13 @@ function App() {
     attributes: board[0],
     ref: refs.current[0],
   });
+  const [history, setHistory] = useState<
+    {
+      displayCells: number[];
+      notes: boolean[][];
+    }[]
+  >([{ displayCells: displayCells, notes: notes }]);
+  const [historyIndex, setHistoryIndex] = useState<number>(0);
   const cells = useMemo(
     () =>
       board.map((cell, index) => (
@@ -66,13 +76,20 @@ function App() {
                 )
               : false
           }
-          shared={false}
+          shared={
+            displayCells[cell.index] != 0
+              ? checkSameNumber(cell.index, displayCells, currentCell)
+              : false
+          }
           focused={currentCell.attributes.index == cell.index ? true : false}
           size={"16"}
           onClick={() => {
             if (currentCell.attributes.index != cell.index)
               setCurrentCell({
-                attributes: cell,
+                attributes: {
+                  ...cell,
+                  displayNumber: displayCells[cell.index],
+                },
                 ref: refs.current[cell.index],
               });
           }}
@@ -85,7 +102,8 @@ function App() {
     [showAnswers, notes, displayCells, currentCell]
   );
 
-  const keyboardFunction = (event: React.KeyboardEvent) =>
+  const keyboardFunction = (event: React.KeyboardEvent) => {
+    event.preventDefault();
     keyBoardHandler(
       event,
       currentCell,
@@ -101,6 +119,7 @@ function App() {
       keyMap,
       isModalOpen
     );
+  };
 
   const keys = [
     "ArrowUp",
@@ -123,7 +142,6 @@ function App() {
 
   function shiftHold(e: KeyboardEvent) {
     if (e.key === "Shift" && !e.repeat) {
-      e.preventDefault();
       setNoteMode((prev) => !prev);
     }
   }
@@ -255,6 +273,18 @@ function App() {
           </div>
           <SudokuButton
             buttonStyle="transition rounded-xl p-3 text-lg"
+            bgColor="bg-gray-400"
+            bgHover="hover:bg-gray-600"
+            bgActive="hover:bg-gray-700"
+            textColor="text-gray-300"
+            textHover="text-white"
+            disabled={true}
+            buttonMouseDown={(e: React.MouseEvent) => {}}
+          >
+            Undo
+          </SudokuButton>
+          <SudokuButton
+            buttonStyle="transition rounded-xl p-3 text-lg"
             bgColor="bg-red-500"
             bgHover="hover:bg-red-600"
             bgActive="hover:bg-red-700"
@@ -272,6 +302,18 @@ function App() {
             }}
           >
             <img src={eraser} alt="Clear Cell" />
+          </SudokuButton>
+          <SudokuButton
+            buttonStyle="transition rounded-xl p-3 text-lg"
+            bgColor="bg-gray-400"
+            bgHover="hover:bg-gray-600"
+            bgActive="hover:bg-gray-700"
+            textColor="text-gray-300"
+            textHover="text-white"
+            disabled={true}
+            buttonMouseDown={(e: React.MouseEvent) => {}}
+          >
+            Redo
           </SudokuButton>
           <div className="flex flex-col items-center w-28">
             Show Answers
@@ -299,10 +341,14 @@ function App() {
           setNotes={setNotes}
           noteMode={noteMode}
           board={board}
+          history={history}
+          setHistory={setHistory}
+          setHistoryIndex={setHistoryIndex}
         />
         <h1 className="pt-3">
-          Currently Selected Cell:{" "}
-          {currentCell ? currentCell.attributes.index : "none"}
+          Selected Cell: {currentCell ? currentCell.attributes.index : "none"}{" "}
+          Display Number:{" "}
+          {currentCell ? currentCell.attributes.displayNumber : "none"}
         </h1>
         <div className="pt-3">
           <SudokuButton

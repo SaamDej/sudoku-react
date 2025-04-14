@@ -10,6 +10,19 @@ interface NumPadProps {
   setNotes: React.Dispatch<React.SetStateAction<boolean[][]>>;
   noteMode: boolean;
   board: SudokuCellAttributes[];
+  history: {
+    displayCells: number[];
+    notes: boolean[][];
+  }[];
+  setHistory: React.Dispatch<
+    React.SetStateAction<
+      {
+        displayCells: number[];
+        notes: boolean[][];
+      }[]
+    >
+  >;
+  setHistoryIndex: React.Dispatch<React.SetStateAction<number>>;
 }
 const NumPad = ({
   currCell,
@@ -19,6 +32,9 @@ const NumPad = ({
   setNotes,
   noteMode,
   board,
+  history,
+  setHistory,
+  setHistoryIndex,
 }: NumPadProps) => {
   const buttonArray = new Array(9).fill(null).map((_, i) => (
     <NumPadButton
@@ -43,6 +59,20 @@ const NumPad = ({
                 } else return noteArray;
               });
               setNotes(newNotes);
+              let newHistory = [];
+              if (history.length < 10) {
+                newHistory = [
+                  ...history,
+                  { displayCells: displayArray, notes: newNotes },
+                ];
+              } else {
+                newHistory = [
+                  ...history.slice(-9),
+                  { displayCells: displayArray, notes: newNotes },
+                ];
+              }
+              setHistory(newHistory);
+              console.log(newHistory);
             }
           } else {
             const newArray = displayArray.map((value, index) => {
@@ -52,17 +82,29 @@ const NumPad = ({
               } else return value;
             });
             setDisplay(newArray);
-            updateNotes(
+            const newNotes = updateNotes(
               notes,
-              setNotes,
+              //setNotes,
               i + 1,
               currCell.attributes.index,
-              board[currCell.attributes.index].row,
-              board[currCell.attributes.index].column,
-              board[currCell.attributes.index].block,
               displayArray,
               board
             );
+            setNotes(newNotes);
+            let newHistory = [];
+            if (history.length < 10) {
+              newHistory = [
+                ...history,
+                { displayCells: newArray, notes: newNotes },
+              ];
+            } else {
+              newHistory = [
+                ...history.slice(-9),
+                { displayCells: newArray, notes: newNotes },
+              ];
+            }
+            setHistory(newHistory);
+            console.log(newHistory);
           }
         } else {
           console.log("No Cell Selected");

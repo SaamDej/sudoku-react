@@ -9,6 +9,7 @@ interface SudokuButtonProps {
   bgActive?: string;
   textHover?: string;
   bgHover?: string;
+  disabled?: boolean;
 }
 const SudokuButton = ({
   buttonStyle = "",
@@ -18,10 +19,12 @@ const SudokuButton = ({
   textHover = "text-white",
   bgActive = "hover:bg-green-700",
   bgHover = "hover:bg-green-600",
+  disabled = false,
   buttonMouseDown = () => {},
 }: SudokuButtonProps) => {
   const [pressed, setPressed] = useState(false);
-  const buttonStyleString = `${buttonStyle} ${bgColor} ${textColor} ${pressed ? bgActive : bgHover}`;
+  const buttonStyleString = `${buttonStyle} ${bgColor} ${textColor} 
+  ${!disabled && (pressed ? bgActive : bgHover)}`;
   return (
     <button
       className={buttonStyleString}
@@ -35,6 +38,7 @@ const SudokuButton = ({
       onMouseLeave={() => {
         setPressed(false);
       }}
+      disabled={disabled}
     >
       {children}
     </button>

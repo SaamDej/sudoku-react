@@ -12,24 +12,19 @@ const eraseCell = (
   setNotes: React.Dispatch<React.SetStateAction<boolean[][]>>
 ) => {
   e.preventDefault();
-  if (currentCell) {
-    if (!currentCell.attributes.prefilled) {
-      if (displayCells[currentCell.attributes.index] != 0) {
-        const newArray = displayCells.map((value, i) => {
-          if (i === currentCell.attributes.index) {
-            return 0;
-          } else return value;
-        });
-        setDisplayCells(newArray);
-      } else if (checkEmpty(notes[currentCell.attributes.index]) != true) {
-        const clearedArray = notes[currentCell.attributes.index].fill(false);
-        const newNotes = notes.map((noteArray, i) => {
-          if (i === currentCell.attributes.index) {
-            return clearedArray;
-          } else return noteArray;
-        });
-        setNotes(newNotes);
-      }
+  if (currentCell && !currentCell.attributes.prefilled) {
+    if (displayCells[currentCell.attributes.index] != 0) {
+      let newArray = displayCells.slice();
+      newArray[currentCell.attributes.index] = 0;
+      setDisplayCells(newArray);
+    } else if (checkEmpty(notes[currentCell.attributes.index]) != true) {
+      const clearedArray = notes[currentCell.attributes.index].fill(false);
+      const newNotes = notes.map((noteArray, i) => {
+        if (i === currentCell.attributes.index) {
+          return clearedArray;
+        } else return noteArray;
+      });
+      setNotes(newNotes);
     }
   }
 };

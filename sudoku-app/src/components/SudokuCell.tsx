@@ -62,7 +62,9 @@ const SudokuCell = ({
   const cellConflict =
     (!focused ? " bg-red-300 " : "bg-red-400 ") +
     (!prefilled ? " text-red-900" : "");
-  const cellShared = !focused ? "bg-blue-300" : "bg-blue-400";
+  const cellShared =
+    (!focused ? " bg-blue-200 " : "bg-blue-400 ") +
+    (!prefilled ? " text-blue-500" : "");
   const cellPrefilled = !focused ? "bg-white" : "bg-yellow-200";
   function setDisplay(dn: number): string {
     return dn > 0 && dn < 10 ? dn.toString() : "";

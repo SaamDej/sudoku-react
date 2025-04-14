@@ -39,7 +39,10 @@ function keyBoardHandler(
       case "arrowup": {
         if (refCurrents[index - 9])
           setCurrentCell({
-            attributes: board[index - 9],
+            attributes: {
+              ...board[index - 9],
+              displayNumber: displayNumbers[index - 9],
+            },
             ref: refCurrents[index - 9],
           });
         break;
@@ -48,7 +51,10 @@ function keyBoardHandler(
       case "arrowleft": {
         if (refCurrents[index - 1] && board[index - 1].row === board[index].row)
           setCurrentCell({
-            attributes: board[index - 1],
+            attributes: {
+              ...board[index - 1],
+              displayNumber: displayNumbers[index - 1],
+            },
             ref: refCurrents[index - 1],
           });
         break;
@@ -57,7 +63,10 @@ function keyBoardHandler(
       case "arrowdown": {
         if (refCurrents[index + 9]) {
           setCurrentCell({
-            attributes: board[index + 9],
+            attributes: {
+              ...board[index + 9],
+              displayNumber: displayNumbers[index + 9],
+            },
             ref: refCurrents[index + 9],
           });
         }
@@ -67,7 +76,10 @@ function keyBoardHandler(
       case "arrowright": {
         if (refCurrents[index + 1] && board[index + 1].row === board[index].row)
           setCurrentCell({
-            attributes: board[index + 1],
+            attributes: {
+              ...board[index + 1],
+              displayNumber: displayNumbers[index + 1],
+            },
             ref: refCurrents[index + 1],
           });
         break;
@@ -81,6 +93,13 @@ function keyBoardHandler(
               } else return value;
             });
             setDisplayNumbers(newArray);
+            setCurrentCell({
+              attributes: {
+                ...currentCell.attributes,
+                displayNumber: newArray[index],
+              },
+              ref: currentCell.ref,
+            });
           } else if (checkEmpty(notes[index]) != true) {
             const clearedArray = notes[index].fill(false);
             const newNotes = notes.map((noteArray, i) => {
@@ -126,17 +145,22 @@ function keyBoardHandler(
                 } else return value;
               });
               setDisplayNumbers(newArray);
-              updateNotes(
+              setCurrentCell({
+                attributes: {
+                  ...currentCell.attributes,
+                  displayNumber: newArray[index],
+                },
+                ref: currentCell.ref,
+              });
+              const newNotes = updateNotes(
                 notes,
-                setNotes,
+                //setNotes,
                 parsedKey,
                 index,
-                board[index].row,
-                board[index].column,
-                board[index].block,
                 displayNumbers,
                 board
               );
+              setNotes(newNotes);
             }
           }
         }

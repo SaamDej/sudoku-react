@@ -20,7 +20,7 @@ const NumPadButton = ({
   const [clicked, setClicked] = useState(false);
 
   const styles = {
-    enabled: `bg-white hover:text-white ${clicked ? "hover:bg-blue-700" : "hover:bg-blue-500"}`,
+    enabled: `bg-white hover:text-white ${clicked ? "hover:text-5xl hover:bg-blue-700" : "hover:bg-blue-500"}`,
     disabled: "bg-gray-300 text-gray-500",
   };
   return (
