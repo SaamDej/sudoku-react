@@ -1,61 +1,117 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import "./App.css";
-import SudokuCell, { SudokuCellAttributes } from "./components/SudokuCell";
-import setBoardLayout from "./utilities/setBoardLayout";
-import { answerString, prefilledString } from "./utilities/exampleBoard2";
-import NumPad from "./components/NumPad";
-import Modal from "./components/Modal";
 import { Switch } from "@headlessui/react";
-import SudokuButton from "./components/SudokuButton";
-import eraser from "./assets/eraser.svg";
 import useKeyBoardHandler from "./hooks/useKeyboardHandler";
-import keyBoardHandler from "./utilities/keyBoardHandler";
-import conflictHandler from "./utilities/conflictHandler";
-import eraseCell from "./utilities/eraseCell";
-import checkSameNumber from "./utilities/checkSameNumber";
+import {
+  SudokuCell,
+  NumPad,
+  SudokuButton,
+  TimeTracker,
+  CustomSVG,
+  SVG,
+} from "./components";
+import {
+  keyBoardHandler,
+  conflictHandler,
+  checkSameNumber,
+  KEYS,
+  KEY_MAP,
+  BOARD,
+  createNotes,
+  updateNotes,
+  checkEmpty,
+  createNewDisplayCells,
+  createNewNotes,
+} from "./utilities";
+import { CellNotes, SudokuCellAttributes } from "./types";
+
+const initializeNotes = createNotes(BOARD);
+const initializeDisplay = BOARD.map((cell) => {
+  return cell.displayNumber;
+});
 function App() {
-  const maxHistorySize = 10;
-  const board: SudokuCellAttributes[] = useMemo(
-    () => setBoardLayout(answerString, prefilledString),
-    []
-  );
-  const keyMap = useMemo(() => {
-    const km = new Map();
-    for (let i = 0; i < 9; i++) {
-      km.set(`Digit${i + 1}`, i + 1);
-    }
-    return km;
+  const [showAnswers, setShowAnswers] = useState<boolean>(false); // Show or hide the answers
+  const [isPaused, setIsPaused] = useState<boolean>(false); // Timer paused state
+  const [noteMode, setNoteMode] = useState<boolean>(false); // Determine if player input is in note mode or not
+  const [notes, setNotes] = useState<CellNotes[]>(initializeNotes); // Notes for each cell, 81 cells with 9 notes each
+  const [displayCells, setDisplayCells] = useState<number[]>(initializeDisplay); // Array of each cell's displayed number whether prefilled, user filled, or empty.
+  const [currentCell, setCurrentCell] = useState<number>(0);
+  const [time, setTime] = useState("00:00");
+  //const [isModalOpen, setIsModalOpen] = useState<string | null>(null); // Modal state, can be "tutorial", "timer", or null
+  const cellOnClick = useCallback((index: number) => {
+    setCurrentCell(index);
   }, []);
-  const refs = useRef<HTMLDivElement[]>([]);
-  const [showAnswers, setShowAnswers] = useState<boolean>(false);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [noteMode, setNoteMode] = useState<boolean>(false);
-  const [notes, setNotes] = useState<boolean[][]>(
-    Array.from({ length: 81 }, () => Array(9).fill(false))
+
+  const stopwatchHandler = useCallback(() => {
+    setIsPaused((prev) => !prev);
+  }, []);
+  const getTime = useCallback((time: string) => setTime(time), []);
+  const numPadHandler = useCallback(
+    (i: number) => {
+      if (!displayCells || BOARD[currentCell].prefilled) {
+        return;
+      }
+      if (
+        noteMode &&
+        notes &&
+        notes[currentCell] &&
+        displayCells[currentCell] === 0
+      ) {
+        setNotes((prev) => createNewNotes(currentCell, i, prev));
+      } else if (!noteMode) {
+        setDisplayCells((prev) =>
+          createNewDisplayCells(prev, currentCell, i + 1)
+        );
+        setNotes((prev) =>
+          updateNotes(prev, i + 1, currentCell, displayCells, BOARD)
+        );
+      }
+    },
+    [displayCells, currentCell, notes, noteMode]
   );
 
-  const [displayCells, setDisplayCells] = useState<number[]>(
-    board.map((cell) => {
-      return cell.displayNumber;
-    })
+  const eraseHandler = useCallback(() => {
+    if (BOARD[currentCell].prefilled) return;
+    if (displayCells[currentCell] !== 0) {
+      setDisplayCells((prev) => createNewDisplayCells(prev, currentCell, 0));
+      return;
+    }
+    if (notes[currentCell] && !checkEmpty(notes[currentCell])) {
+      const clearedArray = Array(9).fill(false);
+      const newNotes = notes.map((noteArray, index) =>
+        index === currentCell ? clearedArray : noteArray
+      );
+      setNotes(newNotes);
+    }
+  }, [currentCell, displayCells, notes]);
+
+  const handleConflict = useCallback(
+    (cell: SudokuCellAttributes) => {
+      return displayCells[cell.index] != 0
+        ? conflictHandler(
+            cell.row,
+            cell.column,
+            cell.block,
+            cell.index,
+            displayCells,
+            BOARD
+          )
+        : false;
+    },
+    [displayCells]
   );
-  const [currentCell, setCurrentCell] = useState<{
-    attributes: SudokuCellAttributes;
-    ref: HTMLDivElement;
-  }>({
-    attributes: board[0],
-    ref: refs.current[0],
-  });
-  const [history, setHistory] = useState<
-    {
-      displayCells: number[];
-      notes: boolean[][];
-    }[]
-  >([{ displayCells: displayCells, notes: notes }]);
-  const [historyIndex, setHistoryIndex] = useState<number>(0);
+  const handleShared = useCallback(
+    (index: number) => {
+      return displayCells[index] != 0
+        ? checkSameNumber(index, displayCells, currentCell)
+        : false;
+    },
+    [displayCells, currentCell]
+  );
+
   const cells = useMemo(
     () =>
-      board.map((cell, index) => (
+      BOARD.map((cell, index) => (
         <SudokuCell
           index={cell.index}
           row={cell.row}
@@ -64,42 +120,25 @@ function App() {
           answer={cell.answer}
           displayNumber={displayCells[index]}
           prefilled={cell.prefilled}
-          conflict={
-            displayCells[cell.index] != 0
-              ? conflictHandler(
-                  cell.row,
-                  cell.column,
-                  cell.block,
-                  cell.index,
-                  displayCells,
-                  board
-                )
-              : false
-          }
-          shared={
-            displayCells[cell.index] != 0
-              ? checkSameNumber(cell.index, displayCells, currentCell)
-              : false
-          }
-          focused={currentCell.attributes.index == cell.index ? true : false}
-          size={"16"}
-          onClick={() => {
-            if (currentCell.attributes.index != cell.index)
-              setCurrentCell({
-                attributes: {
-                  ...cell,
-                  displayNumber: displayCells[cell.index],
-                },
-                ref: refs.current[cell.index],
-              });
-          }}
-          cellRef={(cell: any) => refs.current.push(cell)}
+          conflict={handleConflict(cell)}
+          shared={handleShared(index)}
+          focused={currentCell === index}
+          size={"cell-size"}
+          onClick={cellOnClick}
           notes={notes[index]}
           showAnswer={showAnswers}
           key={index}
         />
       )),
-    [showAnswers, notes, displayCells, currentCell]
+    [
+      displayCells,
+      currentCell,
+      notes,
+      cellOnClick,
+      showAnswers,
+      handleShared,
+      handleConflict,
+    ]
   );
 
   const keyboardFunction = (event: React.KeyboardEvent) => {
@@ -107,46 +146,34 @@ function App() {
     keyBoardHandler(
       event,
       currentCell,
-      refs.current,
-      board,
+      BOARD,
       displayCells,
       setDisplayCells,
       setCurrentCell,
       noteMode,
       notes,
       setNotes,
-      showAnswers,
-      keyMap,
-      isModalOpen
+      KEY_MAP,
+      isPaused
     );
   };
-
-  const keys = [
-    "ArrowUp",
-    "ArrowDown",
-    "ArrowLeft",
-    "ArrowRight",
-    "Backspace",
-    "w",
-    "W",
-    "a",
-    "A",
-    "s",
-    "S",
-    "d",
-    "D",
-    ...Array(9)
-      .fill("")
-      .map((_, i) => `${i + 1}`),
-  ];
-
+  /** Updates noteMode state whenever shift is held down or released. */
   function shiftHold(e: KeyboardEvent) {
     if (e.key === "Shift" && !e.repeat) {
       setNoteMode((prev) => !prev);
     }
   }
+  const resetBoard = useCallback(() => {
+    setDisplayCells(
+      BOARD.map((cell) => {
+        return cell.displayNumber;
+      })
+    );
+    setNotes(createNotes(BOARD));
+  }, []);
 
-  useKeyBoardHandler(keys, keyboardFunction);
+  /** Passes KEYS array and keyboardFunction function to custom hook */
+  useKeyBoardHandler(KEYS, keyboardFunction);
 
   useEffect(() => {
     document.addEventListener("keydown", shiftHold);
@@ -160,210 +187,134 @@ function App() {
 
   {
     console.count("counter");
+    //console.log(refs.current.length);
   }
 
   return (
     <>
-      <div className="font-libreFranklin flex items-center flex-col space-y-4">
-        <h1 className="text-3xl font-sans">Sudoku React</h1>
-        <SudokuButton
-          buttonStyle="transition p-2 rounded-xl"
-          buttonMouseDown={() => setIsModalOpen(true)}
-        >
-          How to Play
-        </SudokuButton>
-        <Modal isOpen={isModalOpen} setIsOpen={setIsModalOpen}>
-          <>
-            <p className="pt-3 text-left">
-              Sudoku is a puzzle game where the player must fill every empty
-              cell (square) on a <b>9 x 9 cell grid</b> split into a{" "}
-              <b>3 x 3 grid of cell blocks</b> (each being a 3 x 3 cell grid)
-              with <b>a number between 1 and 9</b>. Some of the cells have their
-              answers already given. These <b>prefilled cells</b> are indicated
-              by their answers being displayed in <b>black</b> and{" "}
-              <b>cannot be edited</b>. Numbers inputted into empty (editable)
-              cells will be displayed with a{" "}
-              <b className="text-blue-500">blue color</b> to indicate that they
-              have been <b>inputted by the player</b>.
-            </p>
-            <h1 className="text-xl font-semibold underline">Rules</h1>
-            <p>
-              When filling a cell, the player must make sure that the answer
-              does not conflict with the following condition based on the
-              numbers 1 through 9.
-            </p>
-            <p className="font-bold text-red">
-              A given number cannot appear in any cell block, column, and/or row
-              more than once.
-            </p>
-            <p>
-              If the player inputs an answer which conflicts with this condition
-              based on the filled cells (both prefilled and player-inputted),
-              the <b>conflicting cells</b> will be{" "}
-              <b className="text-red-500">highlighted red</b>.
-            </p>
-            <p>
-              Once the player{" "}
-              <b>fills every empty cell without having any conflicting cells</b>
-              , the puzzle is <b className="text-green-600">complete</b>.
-            </p>
-            <h1 className="text-xl font-semibold underline">Controls</h1>
-            <p>
-              The Sudoku grid can be interacted with via{" "}
-              <b>keyboard and/or onscreen controls</b>.
-            </p>
-            <p>
-              <b className="underline">Selecting a cell :</b> Any cell on the
-              grid can be selected by either{" "}
-              <b>clicking on cell the with the mouse pointer</b>, or by
-              navigating using the following keys:
-            </p>
-            <ul className="list-disc list-inside">
-              <li>
-                <b>W / Up Arrow</b> : Selects the cell above the current cell.
-              </li>
-              <li>
-                <b>A / Left Arrow</b> : Selects the cell below.
-              </li>
-              <li>
-                <b>S / Down Arrow</b> : Selects the cell to the left.
-              </li>
-              <li>
-                <b>D / Right Arrow</b> : Selects the cell to the right.
-              </li>
-            </ul>
-            <p>
-              <b className="underline">Fill a cell :</b> Once a fillable cell
-              has been selected, press any of the <b>number keys (1-9)</b>, or
-              <b> click on one of the nine number buttons</b> below the grid
-              with the mouse pointer.
-            </p>
-            <p>
-              <b className="underline">Clear a cell :</b> Press the{" "}
-              <b>Backspace key</b>, or <b>click the eraser button</b>, with a
-              cell selected.
-            </p>
-            <p>
-              <b className="underline">Note Mode :</b> This feature allows the
-              player to <b>record the potential answers</b> of an empty cell
-              without actually filling it with an answer. Any numbers inputted
-              into an empty cell with Note mode <b>enabled</b> will{" "}
-              <b>mark the cell with a "note"</b> of that number, allowing for{" "}
-              <b>multiple notes on one cell</b>. <b>Hold the Shift key</b> to
-              switch Note mode on (or off) until the key is released.{" "}
-              <b>Click the "Note mode" button</b> below the grid to toggle Note
-              mode on or off. Notes can be cleared with the same controls as
-              listed above. By default Note mode is off.
-            </p>
-          </>
-        </Modal>
-        <div className="sudoku-board border-black bg-black border-4 ">
-          <div className="board-grid">{cells}</div>
-        </div>
-        <div className="z-0 flex flex-row gap-x-5 filter-none">
-          <div className="flex flex-col items-center w-28">
-            Note Mode
-            <Switch
-              checked={noteMode}
-              onChange={() => setNoteMode(!noteMode)}
-              className=" transition-colors group inline-flex h-7 w-14 items-center rounded-full bg-gray-300 data-checked:bg-blue-600 data-disabled:cursor-not-allowed data-disabled:opacity-50"
-            >
-              <span className="size-5 translate-x-1 rounded-full bg-white transition group-data-checked:translate-x-8" />
-            </Switch>
+      {/* --App Wrapper-- */}
+      <div className="min-w-0 inter flex flex-col items-center ">
+        {/* --Header-- */}
+        <header className="header w-full pb-1 sticky top-0  bg-sdk-blue-600 border-b-2 z-20 border-b-sdk-blue-900">
+          <h1 className="text-xl/8 sm:text-2xl text-center text-sdk-neutral-100 font-libre-franklin font-semibold ">
+            Sudoku React
+          </h1>
+        </header>
+        {/* --Container for everything below the header-- */}
+        <div className="flex flex-col items-stretch">
+          {/* --Above Board UI  Wrapper-- */}
+          <div className="above-board flex pt-5 flex-row justify-center items-center">
+            <span className="flex-grow-1 basis-0 flex justify-start text-xl lg:text-2xl">
+              Easy
+            </span>
+            <TimeTracker
+              isPaused={isPaused}
+              onClick={stopwatchHandler}
+              getTime={getTime}
+            />
+            {/* --Settings button wrapper-- */}
+            <div className="flex-grow-1 basis-0 flex justify-end">
+              <SudokuButton
+                buttonStyle="group transition rounded-sm p-[6px] size-10 justify-center"
+                bgColorStyle="bg-sdk-neutral-500"
+                bgHoverStyle="hover:bg-sdk-neutral-300"
+                bgActiveStyle="active:bg-sdk-neutral-600"
+              >
+                <div className="flex items-center justify-center">
+                  <CustomSVG className="fill-sdk-neutral-100 lg:size-[28px] transition-all group-active:scale-125">
+                    <SVG.Settings />
+                  </CustomSVG>
+                </div>
+              </SudokuButton>
+            </div>
           </div>
-          <SudokuButton
-            buttonStyle="transition rounded-xl p-3 text-lg"
-            bgColor="bg-gray-400"
-            bgHover="hover:bg-gray-600"
-            bgActive="hover:bg-gray-700"
-            textColor="text-gray-300"
-            textHover="text-white"
-            disabled={true}
-            buttonMouseDown={(e: React.MouseEvent) => {}}
-          >
-            Undo
-          </SudokuButton>
-          <SudokuButton
-            buttonStyle="transition rounded-xl p-3 text-lg"
-            bgColor="bg-red-500"
-            bgHover="hover:bg-red-600"
-            bgActive="hover:bg-red-700"
-            textColor="text-white"
-            textHover="text-white"
-            buttonMouseDown={(e: React.MouseEvent) => {
-              eraseCell(
-                e,
-                currentCell,
-                displayCells,
-                setDisplayCells,
-                notes,
-                setNotes
-              );
-            }}
-          >
-            <img src={eraser} alt="Clear Cell" />
-          </SudokuButton>
-          <SudokuButton
-            buttonStyle="transition rounded-xl p-3 text-lg"
-            bgColor="bg-gray-400"
-            bgHover="hover:bg-gray-600"
-            bgActive="hover:bg-gray-700"
-            textColor="text-gray-300"
-            textHover="text-white"
-            disabled={true}
-            buttonMouseDown={(e: React.MouseEvent) => {}}
-          >
-            Redo
-          </SudokuButton>
-          <div className="flex flex-col items-center w-28">
-            Show Answers
-            <Switch
-              checked={showAnswers}
-              onChange={() => {
-                setShowAnswers(!showAnswers);
-              }}
-              onMouseDown={(e) => {
-                e.preventDefault();
-              }}
-              className=" transition-colors group inline-flex h-7 w-14 items-center rounded-full bg-gray-300 data-checked:bg-blue-600 data-disabled:cursor-not-allowed data-disabled:opacity-50"
-            >
-              <span className="size-5 translate-x-1 rounded-full bg-white transition group-data-checked:translate-x-8" />
-            </Switch>
+          {/* --The Board and everything else below it-- */}
+          <div className="pt-4 space-y-2 flex flex-col justify-items-center lg:space-x-4 lg:flex-row">
+            {/* --Board wrapper --*/}
+            <div className="flex flex-row items-center justify-center max-w-4xl sudoku-board self-center border-black bg-black border-3">
+              {/* --Div that disables board on pause-- */}
+              <div
+                className={`h-fit transition w-min ease-in absolute z-20 bg-black ${!isPaused ? "opacity-0 pointer-events-none" : "opacity-25 pointer-events-auto"}`}
+              />
+              {/*--Grid-- */}
+              <div className="grid justify-center w-min m grid-cols-[repeat(9,1fr)] [&>*:nth-child(3n):not(:nth-child(9n))]:mr-0.75 [&>*:nth-child(19)]:mb-0.75 [&>*:nth-child(46)]:mb-0.75">
+                {cells}
+              </div>
+            </div>
+            {/* --Below the board wrapper-- */}
+            <div className="lower flex flex-col">
+              {/* --Abover NumPad-- */}
+              <div className="below-board z-0 flex flex-row filter-none space-x-2 pb-5">
+                {/* --Note Mode Toggle Wrapper-- */}
+                <div className=" text-sm flex flex-col basis-0 flex-grow-1 w-min justify-center items-center">
+                  Note Mode
+                  <Switch
+                    checked={noteMode}
+                    onChange={setNoteMode}
+                    className=" transition-colors group inline-flex h-7 w-14 items-center rounded-full bg-sdk-neutral-300 data-checked:bg-sdk-blue-500 data-disabled:cursor-not-allowed data-disabled:opacity-50"
+                  >
+                    <span className="size-5 translate-x-1 rounded-full bg-sdk-neutral-100 transition group-data-checked:translate-x-8" />
+                  </Switch>
+                </div>
+                <SudokuButton
+                  buttonStyle="group transition lg:flex justify-center items-center size-18 rounded-lg p-3 text-lg hidden"
+                  bgColorStyle="bg-sdk-red-500"
+                  bgHoverStyle="hover:bg-sdk-red-400"
+                  bgActiveStyle="active:bg-sdk-red-600"
+                  textColorStyle="text-sdk-neutral-100"
+                  textHoverStyle="text-sdk-neutral-100"
+                  disabled={false}
+                  onClick={eraseHandler}
+                >
+                  <CustomSVG className="size-6 lg:size-8 transition-all /group-active:scale-125">
+                    <SVG.Eraser />
+                  </CustomSVG>
+                </SudokuButton>
+                {/* --Show answers toggle wrapper-- */}
+                <div className="flex flex-col basis-0 text-sm flex-grow-1 w-min justify-center items-center">
+                  Show Answers
+                  <Switch
+                    checked={showAnswers}
+                    onChange={setShowAnswers}
+                    className=" transition-colors group inline-flex h-7 w-14 items-center rounded-full bg-sdk-neutral-300 data-checked:bg-sdk-blue-500 data-disabled:cursor-not-allowed data-disabled:opacity-50"
+                  >
+                    <span className="size-5 translate-x-1 rounded-full bg-sdk-neutral-100 transition group-data-checked:translate-x-8" />
+                  </Switch>
+                </div>
+              </div>
+              {/* --NumPad and below-- */}
+              <div className="flex flex-col /lg:w-min">
+                <NumPad
+                  disabled={false}
+                  onClick={numPadHandler}
+                  eraseHandler={eraseHandler}
+                />
+                <h1>{time}</h1>
+                {/* <h1 className="pt-3">
+                  Selected Cell: {currentCell}{" "}
+                  <br className="hidden lg:inline" /> Display Number:{" "}
+                  {displayCells[currentCell] === 0
+                    ? "none"
+                    : displayCells[currentCell]}
+                </h1> */}
+                {/* --Below Numpad Buttons-- */}
+                {/* <div className=" flex flex-row justify-center space-x-2 pt-3">
+                  <SudokuButton
+                    buttonStyle="transition p-2 w-28 rounded-xl"
+                    //onClick={() => {}}
+                  >
+                    How to Play
+                  </SudokuButton>
+                  <SudokuButton
+                    buttonStyle="transition p-2 w-28 rounded-xl"
+                    onClick={resetBoard}
+                  >
+                    Reset
+                  </SudokuButton>
+                </div> */}
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-      <div className="pt-3">
-        <NumPad
-          currCell={currentCell}
-          displayArray={displayCells}
-          setDisplay={setDisplayCells}
-          notes={notes}
-          setNotes={setNotes}
-          noteMode={noteMode}
-          board={board}
-          history={history}
-          setHistory={setHistory}
-          setHistoryIndex={setHistoryIndex}
-        />
-        <h1 className="pt-3">
-          Selected Cell: {currentCell ? currentCell.attributes.index : "none"}{" "}
-          Display Number:{" "}
-          {currentCell ? currentCell.attributes.displayNumber : "none"}
-        </h1>
-        <div className="pt-3">
-          <SudokuButton
-            buttonStyle="p-3 rounded-xl"
-            buttonMouseDown={() => {
-              setDisplayCells(
-                board.map((cell) => {
-                  return cell.displayNumber;
-                })
-              );
-              setNotes(Array.from({ length: 81 }, () => Array(9).fill(false)));
-            }}
-          >
-            Reset
-          </SudokuButton>
         </div>
       </div>
     </>

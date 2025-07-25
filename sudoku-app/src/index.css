@@ -1,9 +1,59 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @theme {
-  --font-libre-franklin: 'Libre Franklin', sans-serif;
+  --font-libre-franklin: "Libre Franklin", sans-serif;
+  --font-chivo-mono: "Chivo Mono", monospace;
+  --font-permanent-marker: "Permanent Marker", cursive;
+  --font-inter: "Inter", sans-serif;
+
+  --color-sdk-blue-100: #e3e8fc;
+  --color-sdk-blue-200: #bac4f7;
+  --color-sdk-blue-300: #8d9ef0;
+  --color-sdk-blue-400: #5e75e0;
+  --color-sdk-blue-500: #3950c4;
+  --color-sdk-blue-600: #2a40a8;
+  --color-sdk-blue-700: #20318a;
+  --color-sdk-blue-800: #18256b;
+  --color-sdk-blue-900: #101a4d;
+  --color-sdk-green-100: #eafae1;
+  --color-sdk-green-200: #caf7b0;
+  --color-sdk-green-300: #a6eb7f;
+  --color-sdk-green-400: #7acc4a;
+  --color-sdk-green-500: #5ba630;
+  --color-sdk-green-600: #488a22;
+  --color-sdk-green-700: #386e19;
+  --color-sdk-green-800: #284f11;
+  --color-sdk-green-900: #1a330b;
+  --color-sdk-neutral-100: #fafafa;
+  --color-sdk-neutral-200: #ccced9;
+  --color-sdk-neutral-300: #a0a4b8;
+  --color-sdk-neutral-400: #787d96;
+  --color-sdk-neutral-500: #565b75;
+  --color-sdk-neutral-600: #3e4461;
+  --color-sdk-neutral-700: #2b314f;
+  --color-sdk-neutral-800: #1b203b;
+  --color-sdk-neutral-900: #0f1226;
+  --color-sdk-red-100: #fce3e3;
+  --color-sdk-red-200: #f7baba;
+  --color-sdk-red-300: #f08d8d;
+  --color-sdk-red-400: #e05e5e;
+  --color-sdk-red-500: #c43939;
+  --color-sdk-red-600: #a52828;
+  --color-sdk-red-700: #8a2020;
+  --color-sdk-red-800: #6b1818;
+  --color-sdk-red-900: #4d1010;
+  --color-sdk-yellow-100: #fcfae3;
+  --color-sdk-yellow-200: #faf5b6;
+  --color-sdk-yellow-300: #f5ec8c;
+  --color-sdk-yellow-400: #ebdf60;
+  --color-sdk-yellow-500: #ded037;
+  --color-sdk-yellow-600: #baae29;
+  --color-sdk-yellow-700: #968d20;
+  --color-sdk-yellow-800: #706916;
+  --color-sdk-yellow-900: #4d470f;
 }
 
+/* Variable collection */
 /*
   The default border color has changed to `currentcolor` in Tailwind CSS v4,
   so we've added these compatibility styles to make sure everything still

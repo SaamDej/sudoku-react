@@ -1,5 +1,7 @@
-import React, { ReactNode } from "react";
-
+import { ReactNode } from "react";
+/**
+ * This Component is currently unused.
+ */
 interface SudokuBoardProps {
   children: ReactNode;
 }

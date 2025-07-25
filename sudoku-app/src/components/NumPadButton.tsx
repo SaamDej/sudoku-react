@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-
+/**
+ * This Component has been replaced with SudokuButton for now.
+ */
 interface NumPadButtonprops {
   number: number;
   size?: string;
@@ -11,8 +13,8 @@ interface NumPadButtonprops {
 
 const NumPadButton = ({
   number,
-  size = "size-16",
-  fontSize = "font-bold text-4xl",
+  size = "size-12 md:size-20 sm:size-16",
+  fontSize = "font-bold text-3xl lg:text-4xl",
   disabled = false,
   answerCount,
   onClick = (e: any) => {},
@@ -25,13 +27,13 @@ const NumPadButton = ({
   };
   return (
     <button
-      className={`transition ease-in-out rounded-lg border-4 border-gray-700 ${size} ${fontSize} ${disabled ? styles.disabled : styles.enabled} `}
+      className={`transition-all ease-in-out rounded-lg border-4 border-gray-700 ${size} ${fontSize} ${disabled ? styles.disabled : styles.enabled} `}
       disabled={answerCount < 9 ? false : true}
-      onMouseDown={(e) => {
-        onClick(e);
+      onMouseDown={() => {
         setClicked(true);
       }}
-      onMouseUp={() => {
+      onMouseUp={(e) => {
+        onClick(e);
         setClicked(false);
       }}
       onMouseLeave={() => {

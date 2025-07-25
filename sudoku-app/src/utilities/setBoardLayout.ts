@@ -1,5 +1,4 @@
-import { SudokuCellAttributes } from "../components/SudokuCell";
-
+import { SudokuCellAttributes } from "../types";
 function setBoardLayout(answers: string, prefilled: string) {
   const answerArr = Array.from(answers).map((i) => {
     return Number(i);
@@ -11,8 +10,8 @@ function setBoardLayout(answers: string, prefilled: string) {
       return true;
     }
   });
-  console.log(answerArr);
-  console.log(prefilledArr);
+  console.log("ANSWERS: ", answerArr);
+  console.log("BOARD: ", prefilledArr);
   let boardArray: SudokuCellAttributes[] = answerArr.map((cell, i) => {
     const cellRow = Math.floor(i / 9);
     const cellCol = i - cellRow * 9;

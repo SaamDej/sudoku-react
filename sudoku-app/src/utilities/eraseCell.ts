@@ -1,31 +1,30 @@
-import { SudokuCellAttributes } from "../components/SudokuCell";
+import { CellNotes, SudokuCellAttributes } from "../types";
 import checkEmpty from "./checkEmpty";
+import { Dispatch, SetStateAction } from "react";
 const eraseCell = (
   e: React.MouseEvent,
-  currentCell: {
-    attributes: SudokuCellAttributes;
-    ref: HTMLDivElement;
-  },
+  currentCell: SudokuCellAttributes,
   displayCells: number[],
-  setDisplayCells: React.Dispatch<React.SetStateAction<number[]>>,
-  notes: boolean[][],
-  setNotes: React.Dispatch<React.SetStateAction<boolean[][]>>
+  setDisplayCells: Dispatch<SetStateAction<number[]>>,
+  notes: CellNotes[],
+  setNotes: Dispatch<SetStateAction<CellNotes[]>>
 ) => {
   e.preventDefault();
-  if (currentCell && !currentCell.attributes.prefilled) {
-    if (displayCells[currentCell.attributes.index] != 0) {
-      let newArray = displayCells.slice();
-      newArray[currentCell.attributes.index] = 0;
-      setDisplayCells(newArray);
-    } else if (checkEmpty(notes[currentCell.attributes.index]) != true) {
-      const clearedArray = notes[currentCell.attributes.index].fill(false);
-      const newNotes = notes.map((noteArray, i) => {
-        if (i === currentCell.attributes.index) {
-          return clearedArray;
-        } else return noteArray;
-      });
-      setNotes(newNotes);
-    }
+
+  if (!currentCell || currentCell.prefilled) return;
+  const cellIndex = currentCell.index;
+  if (displayCells[cellIndex] !== 0) {
+    const newArray = displayCells.slice();
+    newArray[cellIndex] = 0;
+    setDisplayCells(newArray);
+    return;
+  }
+  if (notes[cellIndex] && !checkEmpty(notes[cellIndex])) {
+    const clearedArray = Array(9).fill(false);
+    const newNotes = notes.map((noteArray, index) =>
+      index === cellIndex ? clearedArray : noteArray
+    );
+    setNotes(newNotes);
   }
 };
 

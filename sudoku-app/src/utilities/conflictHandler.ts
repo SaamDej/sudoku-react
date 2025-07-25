@@ -1,4 +1,4 @@
-import { SudokuCellAttributes } from "../components/SudokuCell";
+import { SudokuCellAttributes } from "../types";
 // This function checks if a user's input creates a confliction on the Sudoku Board.
 // The variable conflict is returned true when the following is true
 // about number that is inputted into a cell:

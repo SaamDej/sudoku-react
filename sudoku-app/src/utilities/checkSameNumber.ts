@@ -1,17 +1,14 @@
-import { SudokuCellAttributes } from "../components/SudokuCell";
+import { SudokuCellAttributes } from "../types";
 
 function checkSameNumber(
   index: number,
   displayNumbers: number[],
-  currentCell: {
-    attributes: SudokuCellAttributes;
-    ref: HTMLDivElement;
-  }
+  currentCell: number
 ) {
   let shared = false;
   if (
-    displayNumbers[index] === displayNumbers[currentCell.attributes.index] &&
-    index !== currentCell.attributes.index
+    displayNumbers[index] === displayNumbers[currentCell] &&
+    index !== currentCell
   ) {
     shared = true;
   }

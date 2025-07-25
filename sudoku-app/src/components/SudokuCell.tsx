@@ -1,14 +1,6 @@
-import React, { useState } from "react";
-
-export type SudokuCellAttributes = {
-  index: number;
-  row: number;
-  column: number;
-  block: number;
-  answer: number;
-  displayNumber: number;
-  prefilled: boolean;
-};
+import { memo, useMemo } from "react";
+import { CellNotes, SudokuCellAttributes } from "../types";
+import { BORDER_TYPES, calculateBorder, setDisplay } from "../utilities";
 
 interface SudokuCellProps {
   index: number;
@@ -22,110 +14,122 @@ interface SudokuCellProps {
   conflict: boolean;
   shared: boolean;
   focused?: boolean;
-  cellRef: any;
-  notes?: boolean[];
+  notes?: CellNotes | null;
   showAnswer: boolean;
-  onClick: () => void;
+  onClick: (index: number) => void;
 }
 
-const SudokuCell = ({
-  index,
-  row,
-  column,
-  block,
-  answer,
-  size = "left",
-  displayNumber,
-  prefilled,
-  conflict,
-  shared,
-  focused = false,
-  onClick,
-  cellRef,
-  notes = Array(9).fill(false), //[false, false, false, false, false, false, false, false, false]
-  showAnswer,
-}: SudokuCellProps) => {
-  const borderTypes = [
-    ["border-r-2 border-b-2", "border-b-2", "border-l-2 border-b-2"],
-    ["border-r-2", "", "border-l-2"],
-    ["border-r-2 border-t-2", "border-t-2", "border-l-2 border-t-2"],
-  ];
-  function calculateBorder(row: number, column: number) {
-    const blockColumn = column % 3;
-    const blockRow = row % 3;
-    return borderTypes[blockRow][blockColumn];
-  }
-  const normalText = "select-none text-5xl font-semibold";
-  const noteText = "select-none grid grid-cols-3 grid-rows-3 gap-x-4";
-  const cellSize = `size-${size} flex items-center justify-center text-center outline-hidden box-content`;
-  const cellDefault = `${focused ? "bg-yellow-200" : "bg-white"} text-blue-500`;
-  const cellConflict =
-    (!focused ? " bg-red-300 " : "bg-red-400 ") +
-    (!prefilled ? " text-red-900" : "");
-  const cellShared =
-    (!focused ? " bg-blue-200 " : "bg-blue-400 ") +
-    (!prefilled ? " text-blue-500" : "");
-  const cellPrefilled = !focused ? "bg-white" : "bg-yellow-200";
-  function setDisplay(dn: number): string {
-    return dn > 0 && dn < 10 ? dn.toString() : "";
-  }
+const SudokuCell = memo(
+  ({
+    index,
+    row,
+    column,
+    block,
+    answer,
+    size = "left",
+    displayNumber,
+    prefilled,
+    conflict,
+    shared,
+    focused = false,
+    onClick,
+    notes,
+    showAnswer,
+  }: SudokuCellProps) => {
+    const styleClasses = {
+      normalText: "cell-text select-none font-bold ",
+      noteText: "select-none grid grid-cols-3 grid-rows-3 w-full",
+      cellSize: `${size} flex items-center justify-center text-center box-content outline-none`,
+      cellDefault: `${focused ? "bg-sdk-yellow-300" : "bg-sdk-neutral-100"} text-sdk-blue-600`,
+      cellConflict:
+        (!focused ? " bg-sdk-red-200 " : "bg-sdk-yellow-300 ") +
+        (!prefilled ? " text-sdk-red-700" : ""),
+      cellShared:
+        `delay-100 ${!focused ? " bg-sdk-blue-200 " : "bg-blue-600 "}` +
+        `${!prefilled ? " text-sdk-blue-600" : ""}`,
+      cellPrefilled: !focused ? "bg-sdk-neutral-100" : "bg-sdk-yellow-300",
+    };
 
-  const cellNotes = notes.map((note, i) =>
-    note ? (
+    const cellNotes = notes
+      ? notes.map((note, i) =>
+          note ? (
+            <div
+              className=" select-none text-[7px] min-[322px]:text-[8px] min-[412px]:text-[10px] min-[484px]:text-[12px] text-base"
+              key={"note-" + i + " cell-" + index}
+            >
+              {(i + 1).toString()}
+            </div>
+          ) : (
+            <div
+              className={`note-${i + 1} select-none text-base`}
+              key={"note-" + i + " cell-" + index}
+            >
+              {" "}
+            </div>
+          )
+        )
+      : null;
+    let cellColor: string = styleClasses.cellDefault;
+    if (conflict) {
+      cellColor = styleClasses.cellConflict;
+    } else if (shared) {
+      cellColor = styleClasses.cellShared;
+    } else if (prefilled) {
+      cellColor = styleClasses.cellPrefilled;
+    }
+
+    //console.log(index);
+
+    return (
       <div
-        className=" select-none text-base"
-        key={"note-" + i + " cell-" + index}
-      >
-        {(i + 1).toString()}
-      </div>
-    ) : (
-      <div
-        className=" select-none text-base"
-        key={"note-" + i + " cell-" + index}
-      >
-        {" "}
-      </div>
-    )
-  );
-  let cellColor: string = cellDefault;
-  if (conflict) {
-    cellColor = cellConflict;
-  } else if (shared) {
-    cellColor = cellShared;
-  } else if (prefilled) {
-    cellColor = cellPrefilled;
-  }
-  return (
-    <div
-      ref={cellRef}
-      className={
-        "transition ease-out " +
-        cellSize +
-        " " +
-        cellColor +
-        " " +
-        calculateBorder(row, column) +
-        " border-slate-400"
-      }
-      onClick={onClick}
-    >
-      {displayNumber > 0 && displayNumber < 10 ? (
-        <p className={normalText + " z-10 "}>{setDisplay(displayNumber)}</p>
-      ) : (
-        <>
-          <div className={noteText + " fixed"}>{cellNotes}</div>
-        </>
-      )}
-      <p
         className={
-          `transition-opacity ease-out fixed duration-300 z-0 text-blue-200 ${showAnswer && !prefilled && displayNumber == 0 ? "opacity-100" : "opacity-0"} ` +
-          normalText
+          `cell-${index} ` +
+          "transition ease-out " +
+          styleClasses.cellSize +
+          " " +
+          cellColor +
+          " " +
+          calculateBorder(BORDER_TYPES, row, column) +
+          " border-slate-400"
         }
+        onClick={() => {
+          //console.log("ONCLICK");
+          if (!focused) {
+            onClick(index);
+          }
+        }}
+        onTouchStart={() => {
+          //console.log("ONTOUCHSTART");
+          if (!focused) {
+            onClick(index);
+          }
+        }}
+        onTouchEnd={(e) => {
+          e.preventDefault();
+        }}
       >
-        {setDisplay(answer)}
-      </p>
-    </div>
-  );
-};
+        {displayNumber > 0 && displayNumber < 10 ? (
+          <p className={styleClasses.normalText + " z-10 "}>
+            {setDisplay(displayNumber)}
+          </p>
+        ) : (
+          <>
+            {notes !== null && (
+              <div className={styleClasses.noteText}>{cellNotes}</div>
+            )}
+          </>
+        )}
+        <p
+          className={
+            `transition-opacity ease-out z-0 absolute duration-300 text-blue-200 ${showAnswer && !prefilled && displayNumber == 0 ? "opacity-100" : "opacity-0"} ` +
+            styleClasses.normalText
+          }
+        >
+          {setDisplay(answer)}
+        </p>
+      </div>
+    );
+  }
+);
 
 export default SudokuCell;

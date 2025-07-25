@@ -1,119 +1,68 @@
-import React from "react";
-import NumPadButton from "./NumPadButton";
-import { SudokuCellAttributes } from "./SudokuCell";
-import updateNotes from "../utilities/updateNotes";
+import { useEffect, useMemo } from "react";
+import { CustomSVG, SudokuButton, SVG } from ".";
 interface NumPadProps {
-  currCell: { attributes: SudokuCellAttributes; ref: HTMLDivElement | null };
-  displayArray?: number[];
-  setDisplay: React.Dispatch<React.SetStateAction<number[]>>;
-  notes: boolean[][];
-  setNotes: React.Dispatch<React.SetStateAction<boolean[][]>>;
-  noteMode: boolean;
-  board: SudokuCellAttributes[];
-  history: {
-    displayCells: number[];
-    notes: boolean[][];
-  }[];
-  setHistory: React.Dispatch<
-    React.SetStateAction<
-      {
-        displayCells: number[];
-        notes: boolean[][];
-      }[]
-    >
-  >;
-  setHistoryIndex: React.Dispatch<React.SetStateAction<number>>;
+  disabled?: boolean;
+  onClick: (i: any) => void;
+  eraseHandler: () => void;
 }
-const NumPad = ({
-  currCell,
-  displayArray = [],
-  setDisplay,
-  notes,
-  setNotes,
-  noteMode,
-  board,
-  history,
-  setHistory,
-  setHistoryIndex,
-}: NumPadProps) => {
-  const buttonArray = new Array(9).fill(null).map((_, i) => (
-    <NumPadButton
-      key={`Numpad-${i + 1}`}
-      number={i + 1}
-      answerCount={5}
-      onClick={(e: React.MouseEvent) => {
-        e.preventDefault();
-        if (currCell && displayArray && !currCell.attributes.prefilled) {
-          if (noteMode) {
-            if (displayArray[currCell.attributes.index] === 0) {
-              const cellNotesArray = notes[currCell.attributes.index].map(
-                (note, index) => {
-                  if (index === i) {
-                    return !note;
-                  } else return note;
-                }
-              );
-              const newNotes = notes.map((noteArray, index) => {
-                if (index === currCell.attributes.index) {
-                  return cellNotesArray;
-                } else return noteArray;
-              });
-              setNotes(newNotes);
-              let newHistory = [];
-              if (history.length < 10) {
-                newHistory = [
-                  ...history,
-                  { displayCells: displayArray, notes: newNotes },
-                ];
-              } else {
-                newHistory = [
-                  ...history.slice(-9),
-                  { displayCells: displayArray, notes: newNotes },
-                ];
-              }
-              setHistory(newHistory);
-              console.log(newHistory);
-            }
-          } else {
-            const newArray = displayArray.map((value, index) => {
-              if (index === currCell.attributes.index) {
-                if (value === i + 1) return 0;
-                else return i + 1;
-              } else return value;
-            });
-            setDisplay(newArray);
-            const newNotes = updateNotes(
-              notes,
-              //setNotes,
-              i + 1,
-              currCell.attributes.index,
-              displayArray,
-              board
-            );
-            setNotes(newNotes);
-            let newHistory = [];
-            if (history.length < 10) {
-              newHistory = [
-                ...history,
-                { displayCells: newArray, notes: newNotes },
-              ];
-            } else {
-              newHistory = [
-                ...history.slice(-9),
-                { displayCells: newArray, notes: newNotes },
-              ];
-            }
-            setHistory(newHistory);
-            console.log(newHistory);
-          }
-        } else {
-          console.log("No Cell Selected");
-        }
-      }}
-    />
-  ));
 
-  return <div className="flex justify-center gap-2">{buttonArray}</div>;
+const buttonClasses = {
+  bgColor: "bg-sdk-blue-500",
+  textColor: "text-sdk-neutral-100",
+  textHover: "hover:text-sdk-neutral-100",
+  textActive: " active:text-sdk-neutral-100",
+  bgActive: "active:bg-sdk-blue-600",
+  bgHover: "hover:bg-sdk-blue-400",
+  buttonStyle:
+    "transition-colors ease-in-out select-none rounded-lg h-12 lg:size-18 justify-center items-center font-bold lg:text-5xl/0.25 text-2xl/0.25",
+  disabled: "disabled:bg-sdk-neutral-300 disabled:text-sdk-neutral-500",
+};
+
+const NumPad = ({ disabled = false, onClick, eraseHandler }: NumPadProps) => {
+  const buttonArray = useMemo(
+    () =>
+      new Array(9).fill(null).map((_, i) => (
+        <SudokuButton
+          key={`Numpad-${i + 1}`}
+          buttonStyle={buttonClasses.buttonStyle}
+          bgColorStyle={buttonClasses.bgColor}
+          textColorStyle={buttonClasses.textColor}
+          textHoverStyle={buttonClasses.textHover}
+          textActiveStyle={buttonClasses.textActive}
+          bgActiveStyle={buttonClasses.bgActive}
+          bgHoverStyle={buttonClasses.bgHover}
+          disabledStyle={buttonClasses.disabled}
+          onClick={() => onClick(i)}
+        >
+          {(i + 1).toString()}
+        </SudokuButton>
+      )),
+    [onClick]
+  );
+
+  // useEffect(() => {
+  //   console.log("component rerendered");
+  // });
+
+  return (
+    <div className="grid grid-cols-5 gap-2 lg:grid-cols-3">
+      {buttonArray}
+      <SudokuButton
+        buttonStyle="group transition flex justify-center items-center h-12 rounded-lg p-3 text-lg lg:hidden"
+        bgColorStyle="bg-sdk-red-500"
+        bgHoverStyle="hover:bg-sdk-red-400"
+        bgActiveStyle="active:bg-sdk-red-600"
+        textColorStyle="text-sdk-neutral-100"
+        textHoverStyle="text-sdk-neutral-100"
+        disabled={disabled}
+        onClick={eraseHandler}
+      >
+        <CustomSVG className="size-6 lg:size-8 transition-all /group-active:scale-125">
+          <SVG.Eraser />
+        </CustomSVG>
+      </SudokuButton>
+    </div>
+  );
 };
 
 export default NumPad;
